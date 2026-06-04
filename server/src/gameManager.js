@@ -1,12 +1,18 @@
 import { WORD_LIST, shuffleWords } from './wordList.js';
 import { analyzeDrawing } from './aiJudge.js';
+import { readFileSync, writeFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const LEADERBOARD_FILE = join(__dirname, '../../leaderboard.json');
 
 const GAME_DURATION_SECONDS = 90;
 const MAX_PLAYERS = 100;
 export const GLOBAL_ROOM = 'GLOBAL';
 
-const AUTO_START_DELAY_MS = 3000;  // wait 3s after first player before starting
-const AUTO_RESET_DELAY_MS = 8000;  // show results for 8s then auto-restart
+const AUTO_START_DELAY_MS = 3000;
+const AUTO_RESET_DELAY_MS = 8000;
 
 function createPlayer(id, name, email) {
   return {
@@ -21,9 +27,26 @@ function createPlayer(id, name, email) {
   };
 }
 
-// Persistent all-time leaderboard — keyed by email (falls back to name)
-// Survives disconnects and game resets for the lifetime of the server process
+// Load persisted leaderboard from disk on startup
 const allTimeLeaderboard = new Map();
+try {
+  const saved = JSON.parse(readFileSync(LEADERBOARD_FILE, 'utf8'));
+  for (const [key, val] of Object.entries(saved)) {
+    allTimeLeaderboard.set(key, val);
+  }
+  console.log(`[Leaderboard] Loaded ${allTimeLeaderboard.size} entries from disk`);
+} catch {
+  // File doesn't exist yet — start fresh
+}
+
+function saveLeaderboard() {
+  try {
+    const obj = Object.fromEntries(allTimeLeaderboard);
+    writeFileSync(LEADERBOARD_FILE, JSON.stringify(obj), 'utf8');
+  } catch (err) {
+    console.error('[Leaderboard] Failed to save:', err.message);
+  }
+}
 
 function getAllTimeKey(name, email) {
   return (email && email.trim()) ? email.trim().toLowerCase() : name.trim().toLowerCase();
@@ -202,6 +225,7 @@ export async function submitDrawing(playerId, wordGuessed, imageData, textPenalt
   if (game.io) {
     game.io.to(GLOBAL_ROOM).emit('leaderboard-update', { leaderboard: getLeaderboard() });
     if (judgment.correct) {
+      saveLeaderboard();
       game.io.to(GLOBAL_ROOM).emit('alltime-leaderboard', { leaderboard: getAllTimeLeaderboardArray() });
     }
   }
@@ -251,6 +275,7 @@ function endGame(io) {
 
   // Persist final scores to all-time leaderboard
   updateAllTimeLeaderboard(getPlayersArray(), false);
+  saveLeaderboard();
 
   const allTime = getAllTimeLeaderboardArray();
   io.to(GLOBAL_ROOM).emit('game-over', {

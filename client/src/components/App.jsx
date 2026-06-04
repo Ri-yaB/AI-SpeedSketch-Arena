@@ -124,12 +124,7 @@ export default function App() {
       <div className={`app-content ${showNav ? 'app-content--with-nav' : ''}`}>
         {activeTab === 'game' && renderGameContent()}
         {activeTab === 'leaderboard' && (
-          <LeaderboardPage
-            socketRef={socketRef}
-            leaderboard={state.leaderboard}
-            gameState={state.gameState}
-            timeRemaining={state.timeRemaining}
-          />
+          <LeaderboardPage socketRef={socketRef} />
         )}
         {activeTab === 'instructions' && <InstructionsPage />}
       </div>

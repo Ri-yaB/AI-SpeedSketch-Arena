@@ -3,7 +3,7 @@ import DHSLogo from './DHSLogo.jsx';
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 
-export default function LeaderboardPage({ socketRef, gameState, timeRemaining }) {
+export default function LeaderboardPage({ socketRef }) {
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
@@ -20,28 +20,11 @@ export default function LeaderboardPage({ socketRef, gameState, timeRemaining })
     return () => s.off('alltime-leaderboard', onUpdate);
   }, [socketRef]);
 
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${String(s).padStart(2, '0')}`;
-  };
-
-  const isLive = gameState === 'playing';
-  const statusLabel = isLive
-    ? `Game in progress — ${formatTime(timeRemaining)} left`
-    : gameState === 'finished'
-    ? 'Game over — restarting soon...'
-    : 'Waiting for players...';
-
   return (
     <div className="lb-page">
       <div className="lb-page__header">
         <DHSLogo height={32} />
         <div className="lb-page__title">Leaderboard</div>
-        <div className={`lb-page__status ${isLive ? 'lb-page__status--live' : ''}`}>
-          {isLive && <span className="live-dot" />}
-          {statusLabel}
-        </div>
       </div>
 
       <div className="lb-page__body">
