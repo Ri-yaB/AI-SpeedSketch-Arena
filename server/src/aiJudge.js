@@ -52,16 +52,23 @@ async function analyzeWithGemini(imageDataBase64, targetWord) {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    const prompt = `You are a strict Pictionary judge. The player was trying to draw: "${targetWord}".
+    const prompt = `You are an extremely strict Pictionary judge. The player was trying to draw: "${targetWord}".
 
-Carefully examine the drawing. Be strict — a vague or partial resemblance is NOT enough.
+IMPORTANT: Only mark CORRECT if you are MORE than 95% sure the drawing clearly and unmistakably shows "${targetWord}". When in doubt, mark INCORRECT.
 
-Mark CORRECT only if: the drawing unmistakably and clearly represents "${targetWord}" with its key defining features visible.
-Mark INCORRECT if: blank/near-blank canvas, random lines, only vague similarity, written text, or could easily be mistaken for something else.
+Ask yourself: Would ANY person looking at this drawing — with no hint — immediately say "${targetWord}"? If there is ANY doubt, mark INCORRECT.
 
-Also write a short witty one-liner message (max 12 words) reacting to this specific drawing — mention what you actually see. Be funny and specific, not generic.
+Mark INCORRECT if:
+- Blank or nearly blank canvas
+- Random lines or scribbles
+- Only vague resemblance
+- Could be mistaken for anything else
+- Missing the key defining features of "${targetWord}"
+- You are less than 95% confident
 
-Reply ONLY valid JSON (no markdown): {"description":"one sentence of what you see","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"what this drawing looks like","message":"your witty one-liner about this specific drawing"}`;
+Also write a short witty one-liner (max 12 words) about what you specifically see in this drawing. Be funny and direct.
+
+Reply ONLY valid JSON (no markdown): {"description":"one sentence of what you literally see","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"what this most looks like","message":"witty one-liner about this specific drawing"}`;
 
     // Detect mime type from data URL prefix (client sends JPEG now)
     const mimeType = imageDataBase64.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png';
@@ -82,8 +89,8 @@ Reply ONLY valid JSON (no markdown): {"description":"one sentence of what you se
     const json = JSON.parse(jsonMatch[0]);
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
-    // Only accept if model is highly confident
-    const correct = !!json.correct && confidence > 0.75;
+    // Only accept if model is >95% confident
+    const correct = !!json.correct && confidence > 0.92;
     const aiGuess = json.guess || (correct ? targetWord : 'something else');
     const description = json.description || null;
 
