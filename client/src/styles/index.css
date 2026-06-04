@@ -1938,6 +1938,68 @@ body {
   margin-bottom: 10px;
 }
 
+/* ── DHS Orb waiting screen ────────────────────────────────────── */
+.dhs-waiting-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  background: #000;
+  gap: 28px;
+}
+
+.dhs-orb {
+  position: relative;
+  width: min(52vmin, 340px);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 110% 72% at 50% 50%, rgba(74,60,217,0.18), transparent 60%),
+    #000;
+}
+
+.dhs-orb .dhs-halo {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 34%, rgba(0,225,255,0.35), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(74,60,217,0.32), transparent 55%);
+  filter: blur(34px);
+  animation: dhsHaloPulse 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.dhs-orb .dhs-mark        { width: 100%; height: 100%; display: block; overflow: visible; }
+.dhs-orb .dhs-svg-halo    { transform-origin: center; transform-box: fill-box;  animation: dhsBreathe     9s ease-in-out infinite; }
+.dhs-orb .dhs-outer-rot   { transform-origin: 0 0;    transform-box: view-box;  animation: dhsRotCCW     30s linear     infinite; }
+.dhs-orb .dhs-outer-scale { transform-origin: 0 0;    transform-box: view-box;  animation: dhsBreathe     9s ease-in-out infinite; }
+.dhs-orb .dhs-inner-rot   { transform-origin: 0 0;    transform-box: view-box;  animation: dhsRotCW      22s linear     infinite; }
+.dhs-orb .dhs-inner-scale { transform-origin: 0 0;    transform-box: view-box;  animation: dhsBreatheRev 11s ease-in-out infinite; }
+.dhs-orb .dhs-core-glow   { transform-origin: center; transform-box: fill-box;  animation: dhsCorePulse 4.4s ease-in-out infinite; }
+
+@keyframes dhsRotCW      { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+@keyframes dhsRotCCW     { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+@keyframes dhsBreathe    { 0%,100% { transform: scale(1);    } 50% { transform: scale(1.05);    } }
+@keyframes dhsBreatheRev { 0%,100% { transform: scale(1.05); } 50% { transform: scale(1);       } }
+@keyframes dhsHaloPulse  { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.06); opacity: 1; } }
+@keyframes dhsCorePulse  { 0%,100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.15); opacity: 1; } }
+
+.dhs-waiting-text {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.dhs-waiting-sub {
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+
 .lobby-waiting {
   display: flex;
   flex-direction: column;
