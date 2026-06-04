@@ -13,7 +13,7 @@ import {
   GLOBAL_ROOM,
 } from './gameManager.js';
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const app = express();
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
