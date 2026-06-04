@@ -276,16 +276,7 @@ export function resetGame(io) {
   game.gameState = 'waiting';
   game.timeRemaining = GAME_DURATION_SECONDS;
   game.wordPool = [];
+  game.players.clear(); // Everyone returns to lobby — must re-join to play again
 
-  for (const player of game.players.values()) {
-    player.score = 0;
-    player.currentWord = null;
-    player.completedWords = [];
-    player.wordsAttempted = 0;
-  }
-
-  // Start immediately if players are present
-  if (game.players.size > 0) {
-    startGame(io);
-  }
+  io.to(GLOBAL_ROOM).emit('return-to-lobby');
 }

@@ -99,12 +99,17 @@ export function useGameState(socketRef, myPlayerId) {
       }
     };
 
+    const onReturnToLobby = () => {
+      setState(INITIAL_STATE);
+    };
+
     socket.on('room-update', onRoomUpdate);
     socket.on('game-started', onGameStarted);
     socket.on('game-tick', onGameTick);
     socket.on('drawing-result', onDrawingResult);
     socket.on('leaderboard-update', onLeaderboardUpdate);
     socket.on('game-over', onGameOver);
+    socket.on('return-to-lobby', onReturnToLobby);
 
     return () => {
       socket.off('room-update', onRoomUpdate);
@@ -113,6 +118,7 @@ export function useGameState(socketRef, myPlayerId) {
       socket.off('drawing-result', onDrawingResult);
       socket.off('leaderboard-update', onLeaderboardUpdate);
       socket.off('game-over', onGameOver);
+      socket.off('return-to-lobby', onReturnToLobby);
     };
   }, [socketRef, myPlayerId]);
 
