@@ -5,6 +5,7 @@ const INITIAL_STATE = {
   gameState: 'waiting',
   players: [],
   wordPool: [],
+  wordDifficulty: {},
   timeRemaining: 90,
   myScore: 0,
   completedWords: [],
@@ -43,11 +44,12 @@ export function useGameState(socketRef, myPlayerId) {
       });
     };
 
-    const onGameStarted = ({ wordPool, timeRemaining, players }) => {
+    const onGameStarted = ({ wordPool, wordDifficulty, timeRemaining, players }) => {
       setState(prev => ({
         ...prev,
         gameState: 'playing',
         wordPool,
+        wordDifficulty: wordDifficulty || prev.wordDifficulty,
         timeRemaining,
         players,
         myScore: 0,
@@ -135,6 +137,7 @@ export function useGameState(socketRef, myPlayerId) {
           gameState: response.snapshot.gameState,
           players: response.snapshot.players,
           wordPool: response.snapshot.wordPool,
+          wordDifficulty: response.snapshot.wordDifficulty || prev.wordDifficulty,
           timeRemaining: response.snapshot.timeRemaining,
           leaderboard: [...response.snapshot.players].sort((a, b) => b.score - a.score),
         }));

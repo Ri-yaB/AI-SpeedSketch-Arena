@@ -1,4 +1,4 @@
-import { WORD_LIST, shuffleWords } from './wordList.js';
+import { WORD_LIST, WORD_DIFFICULTY, shuffleWords } from './wordList.js';
 import { analyzeDrawing } from './aiJudge.js';
 import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
@@ -153,6 +153,7 @@ export function startGame(io) {
 
   io.to(GLOBAL_ROOM).emit('game-started', {
     wordPool: game.wordPool,
+    wordDifficulty: WORD_DIFFICULTY,
     timeRemaining: game.timeRemaining,
     players: getPlayersArray(),
   });
@@ -247,6 +248,7 @@ export function getSnapshot() {
     gameState: game.gameState,
     timeRemaining: game.timeRemaining,
     wordPool: game.wordPool,
+    wordDifficulty: WORD_DIFFICULTY,
     players: getPlayersArray(),
   };
 }

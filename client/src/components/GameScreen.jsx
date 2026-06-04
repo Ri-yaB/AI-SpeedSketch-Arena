@@ -10,7 +10,7 @@ const RANK_ICONS = ['🥇', '🥈', '🥉'];
 export default function GameScreen({ state, myPlayerId, actions }) {
   const {
     timeRemaining, myScore, selectedWord, completedWords,
-    wordPool, leaderboard, drawingResults, hintsRemaining, hintWord,
+    wordPool, wordDifficulty, leaderboard, drawingResults, hintsRemaining, hintWord,
   } = state;
 
   const [activeTab, setActiveTab] = useState('draw');
@@ -97,6 +97,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
           <div className="game-panel game-panel--left">
             <WordPool
               words={wordPool}
+              wordDifficulty={wordDifficulty}
               selectedWord={selectedWord}
               completedWords={completedWords}
               onSelectWord={handleSelectWord}

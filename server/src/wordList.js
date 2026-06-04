@@ -1,20 +1,33 @@
-export const WORD_LIST = [
-  // Animals
-  'cat', 'dog', 'fish', 'bird', 'duck', 'frog', 'lion', 'pig', 'cow', 'horse',
-  'rabbit', 'bear', 'elephant', 'shark', 'butterfly', 'turtle', 'snake', 'penguin',
-  // Food
-  'pizza', 'cake', 'apple', 'banana', 'donut', 'cookie', 'ice cream', 'egg',
-  'hamburger', 'hotdog', 'sandwich', 'popcorn', 'cupcake', 'lemon', 'carrot', 'star',
-  // Simple objects
-  'ball', 'book', 'car', 'bus', 'boat', 'house', 'chair', 'table', 'door', 'key',
-  'hat', 'shoe', 'bag', 'cup', 'spoon', 'fork', 'clock', 'bell', 'box', 'flag',
-  // Nature
-  'sun', 'moon', 'star', 'cloud', 'rain', 'tree', 'flower', 'leaf', 'mountain',
-  'wave', 'rainbow', 'fire', 'snowman', 'cactus', 'mushroom',
-  // Fun / easy shapes
-  'heart', 'crown', 'ghost', 'alien', 'rocket', 'robot', 'dragon', 'castle',
-  'umbrella', 'bicycle', 'airplane', 'guitar', 'trophy', 'diamond', 'anchor',
+// Each entry: [word, difficulty]  difficulty: 'easy' | 'medium' | 'hard'
+export const WORD_LIST_WITH_DIFFICULTY = [
+  // Easy — simple shapes, everyday objects anyone can sketch in seconds
+  ['cat', 'easy'], ['dog', 'easy'], ['fish', 'easy'], ['bird', 'easy'],
+  ['sun', 'easy'], ['moon', 'easy'], ['star', 'easy'], ['heart', 'easy'],
+  ['house', 'easy'], ['tree', 'easy'], ['flower', 'easy'], ['apple', 'easy'],
+  ['ball', 'easy'], ['car', 'easy'], ['boat', 'easy'], ['cloud', 'easy'],
+  ['egg', 'easy'], ['hat', 'easy'], ['cup', 'easy'], ['book', 'easy'],
+  ['eye', 'easy'], ['hand', 'easy'], ['door', 'easy'], ['flag', 'easy'],
+
+  // Medium — recognizable but need a few more details
+  ['elephant', 'medium'], ['penguin', 'medium'], ['frog', 'medium'], ['rabbit', 'medium'],
+  ['pizza', 'medium'], ['cake', 'medium'], ['donut', 'medium'], ['hamburger', 'medium'],
+  ['bicycle', 'medium'], ['airplane', 'medium'], ['guitar', 'medium'], ['umbrella', 'medium'],
+  ['clock', 'medium'], ['key', 'medium'], ['crown', 'medium'], ['ghost', 'medium'],
+  ['rocket', 'medium'], ['robot', 'medium'], ['rainbow', 'medium'], ['mountain', 'medium'],
+  ['mushroom', 'medium'], ['cactus', 'medium'], ['diamond', 'medium'], ['trophy', 'medium'],
+
+  // Hard — complex or abstract, requires good drawing skills
+  ['octopus', 'hard'], ['butterfly', 'hard'], ['dragon', 'hard'], ['mermaid', 'hard'],
+  ['astronaut', 'hard'], ['volcano', 'hard'], ['tornado', 'hard'], ['lighthouse', 'hard'],
+  ['saxophone', 'hard'], ['microscope', 'hard'], ['telescope', 'hard'], ['submarine', 'hard'],
+  ['castle', 'hard'], ['dinosaur', 'hard'], ['snowman', 'hard'], ['wizard', 'hard'],
 ];
+
+// Flat word array for game logic
+export const WORD_LIST = WORD_LIST_WITH_DIFFICULTY.map(([word]) => word);
+
+// Map for quick difficulty lookup
+export const WORD_DIFFICULTY = Object.fromEntries(WORD_LIST_WITH_DIFFICULTY);
 
 export function shuffleWords(words) {
   const arr = [...words];
