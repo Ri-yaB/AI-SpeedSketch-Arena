@@ -1,11 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import DrawingCanvas from './DrawingCanvas.jsx';
 import WordPool from './WordPool.jsx';
 import Leaderboard from './Leaderboard.jsx';
 import AIFeedback from './AIFeedback.jsx';
+import Confetti from './Confetti.jsx';
 import DHSLogo from './DHSLogo.jsx';
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
+
+const STREAK_LABELS = {
+  2: { text: '🔥 On Fire!',    color: '#f97316' },
+  3: { text: '🔥🔥 Hot Streak!', color: '#ef4444' },
+  5: { text: '💥 UNSTOPPABLE!', color: '#a855f7' },
+};
 
 export default function GameScreen({ state, myPlayerId, actions }) {
   const {
@@ -14,9 +21,49 @@ export default function GameScreen({ state, myPlayerId, actions }) {
   } = state;
 
   const [activeTab, setActiveTab] = useState('draw');
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const [scorePops, setScorePops] = useState([]); // { id, value }
+  const [streak, setStreak] = useState(0);
+  const [streakBanner, setStreakBanner] = useState(null);
+  const streakTimerRef = useRef(null);
+  const prevResultRef = useRef(null);
+  const popIdRef = useRef(0);
+
+  const isPanic = timeRemaining <= 10 && timeRemaining > 0;
   const isUrgent = timeRemaining <= 15;
 
-  // Submit is fire-and-forget — callback fires instantly (server acks before AI runs)
+  // React to new drawing results
+  useEffect(() => {
+    if (!drawingResults || drawingResults.length === 0) return;
+    const latest = drawingResults[0];
+    if (latest === prevResultRef.current) return;
+    prevResultRef.current = latest;
+
+    if (latest.correct) {
+      // Confetti
+      setConfettiTrigger(t => t + 1);
+
+      // Score pop
+      const popId = ++popIdRef.current;
+      setScorePops(prev => [...prev, { id: popId, value: '+2' }]);
+      setTimeout(() => setScorePops(prev => prev.filter(p => p.id !== popId)), 1200);
+
+      // Streak
+      setStreak(s => {
+        const next = s + 1;
+        const label = next >= 5 ? STREAK_LABELS[5] : STREAK_LABELS[next] || null;
+        if (label) {
+          clearTimeout(streakTimerRef.current);
+          setStreakBanner(label);
+          streakTimerRef.current = setTimeout(() => setStreakBanner(null), 2200);
+        }
+        return next;
+      });
+    } else {
+      setStreak(0);
+    }
+  }, [drawingResults[0]]);
+
   const handleSubmit = useCallback(({ word, imageData, textPenalty }) => {
     actions.submitDrawing({ word, imageData, textPenalty });
   }, [actions]);
@@ -35,7 +82,23 @@ export default function GameScreen({ state, myPlayerId, actions }) {
   const myRank = leaderboard.findIndex(p => p.id === myPlayerId) + 1;
 
   return (
-    <div className="game-screen">
+    <div className={`game-screen ${isPanic ? 'game-screen--panic' : ''}`}>
+      <Confetti trigger={confettiTrigger} />
+
+      {/* Floating +2 score pops */}
+      <div className="score-pops">
+        {scorePops.map(p => (
+          <div key={p.id} className="score-pop">{p.value}</div>
+        ))}
+      </div>
+
+      {/* Streak banner */}
+      {streakBanner && (
+        <div className="streak-banner" style={{ color: streakBanner.color }}>
+          {streakBanner.text}
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="game-topbar">
         <div className="game-topbar__left">
@@ -44,10 +107,13 @@ export default function GameScreen({ state, myPlayerId, actions }) {
           </div>
           <div className="game-topbar__divider" />
           <div className="game-brand">SpeedSketch Arena</div>
+          {streak >= 2 && (
+            <div className="streak-chip">🔥 {streak}x</div>
+          )}
         </div>
 
         <div className="game-topbar__center">
-          <div className={`game-timer ${isUrgent ? 'game-timer--urgent' : ''}`}>
+          <div className={`game-timer ${isUrgent ? 'game-timer--urgent' : ''} ${isPanic ? 'game-timer--panic' : ''}`}>
             {isUrgent && <span className="game-timer__pulse" />}
             <span className="game-timer__value">{formatTime(timeRemaining)}</span>
             <div className="game-timer__bar">
@@ -92,7 +158,6 @@ export default function GameScreen({ state, myPlayerId, actions }) {
       </div>
 
       {activeTab === 'draw' ? (
-        /* ---- Draw Tab ---- */
         <div className="game-main">
           <div className="game-panel game-panel--left">
             <WordPool
@@ -120,11 +185,8 @@ export default function GameScreen({ state, myPlayerId, actions }) {
           </div>
         </div>
       ) : (
-        /* ---- Leaderboard Tab ---- */
         <div className="leaderboard-tab-view">
-          <div className="leaderboard-tab-header">
-            Live Rankings
-          </div>
+          <div className="leaderboard-tab-header">Live Rankings</div>
           {leaderboard.length === 0 ? (
             <div style={{ color: '#4A5568', textAlign: 'center', padding: '40px' }}>
               No players yet...
@@ -142,7 +204,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
                 <span className="leaderboard-full-row__name">
                   {player.name}
                   {player.id === myPlayerId && (
-                    <span style={{ color: '#FF6B2B', marginLeft: 6, fontSize: 11 }}>(you)</span>
+                    <span style={{ color: '#2D5BE3', marginLeft: 6, fontSize: 11 }}>(you)</span>
                   )}
                 </span>
                 <span className="leaderboard-full-row__words">
