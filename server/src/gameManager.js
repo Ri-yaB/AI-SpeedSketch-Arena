@@ -215,9 +215,11 @@ export async function submitDrawing(playerId, wordGuessed, imageData, textPenalt
   const judgment = await analyzeDrawing(imageData, wordGuessed);
 
   if (judgment.correct) {
-    player.score += 2;
+    const points = WORD_DIFFICULTY[wordGuessed] === 'hard' ? 4 : 2;
+    player.score += points;
     player.completedWords.push(wordGuessed);
     player.currentWord = null;
+    judgment.points = points;
     // Update persistent leaderboard immediately on each correct word
     updateAllTimeLeaderboard([player]);
   }

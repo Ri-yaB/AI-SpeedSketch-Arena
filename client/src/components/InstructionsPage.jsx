@@ -41,7 +41,8 @@ const STEPS = [
 ];
 
 const SCORING = [
-  { label: 'Correct drawing', points: '+2 pts' },
+  { label: 'Easy / Medium correct', points: '+2 pts' },
+  { label: 'Hard correct', points: '+4 pts' },
   { label: 'Writing word detected', points: '−1 pt' },
 ];
 

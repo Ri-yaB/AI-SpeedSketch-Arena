@@ -80,7 +80,7 @@ export default function AIFeedback({ results }) {
             <>
               <div className="ai-toast__icon">✓</div>
               <div className="ai-toast__content">
-                <div className="ai-toast__title">AI Got It! +2 Points 🎉</div>
+                <div className="ai-toast__title">AI Got It! +{toast.points || 2} Points 🎉</div>
                 <div className="ai-toast__message">
                   "{toast.wordGuessed}" recognized with {Math.round(toast.confidence * 100)}% confidence
                 </div>

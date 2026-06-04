@@ -45,7 +45,8 @@ export default function GameScreen({ state, myPlayerId, actions }) {
 
       // Score pop
       const popId = ++popIdRef.current;
-      setScorePops(prev => [...prev, { id: popId, value: '+2' }]);
+      const pts = latest.points || 2;
+      setScorePops(prev => [...prev, { id: popId, value: `+${pts}` }]);
       setTimeout(() => setScorePops(prev => prev.filter(p => p.id !== popId)), 1200);
 
       // Streak
