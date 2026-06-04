@@ -52,14 +52,16 @@ async function analyzeWithGemini(imageDataBase64, targetWord) {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    const prompt = `You are judging a Pictionary sketch. The player was trying to draw: "${targetWord}".
+    const prompt = `You are a strict Pictionary judge. The player was trying to draw: "${targetWord}".
 
-Look at the drawing and decide if it reasonably represents "${targetWord}". Pictionary sketches are simple and rough — they don't need to be perfect, just recognizable.
+Carefully examine the drawing. Be strict — a vague or partial resemblance is NOT enough.
 
-Mark CORRECT if: the drawing clearly shows the key features of "${targetWord}" (e.g. a circle with rays = sun, four legs + body + tail = dog).
-Mark INCORRECT if: completely blank canvas, random scribble with no recognizable form, or written text/letters.
+Mark CORRECT only if: the drawing unmistakably and clearly represents "${targetWord}" with its key defining features visible.
+Mark INCORRECT if: blank/near-blank canvas, random lines, only vague similarity, written text, or could easily be mistaken for something else.
 
-Reply ONLY valid JSON (no markdown): {"description":"what you see in one sentence","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"what this drawing looks like"}`;
+Also write a short witty one-liner message (max 12 words) reacting to this specific drawing — mention what you actually see. Be funny and specific, not generic.
+
+Reply ONLY valid JSON (no markdown): {"description":"one sentence of what you see","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"what this drawing looks like","message":"your witty one-liner about this specific drawing"}`;
 
     // Detect mime type from data URL prefix (client sends JPEG now)
     const mimeType = imageDataBase64.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png';
@@ -80,14 +82,17 @@ Reply ONLY valid JSON (no markdown): {"description":"what you see in one sentenc
     const json = JSON.parse(jsonMatch[0]);
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
-    // Accept if model says correct with reasonable confidence
-    const correct = !!json.correct && confidence > 0.45;
+    // Only accept if model is highly confident
+    const correct = !!json.correct && confidence > 0.75;
     const aiGuess = json.guess || (correct ? targetWord : 'something else');
     const description = json.description || null;
 
-    const funnyMessage = correct
-      ? SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)]
-      : getFailureMessage(aiGuess);
+    // Use Gemini's specific message if provided, else fall back to templates
+    const funnyMessage = json.message
+      ? json.message
+      : correct
+        ? SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)]
+        : getFailureMessage(aiGuess);
 
     return { correct, confidence, aiGuess, description, funnyMessage };
   } catch (err) {
