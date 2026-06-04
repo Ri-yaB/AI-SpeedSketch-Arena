@@ -111,6 +111,14 @@ export function joinGame(playerId, playerName, playerEmail, io) {
 
   game.io = io;
 
+  // If game is finished (showing results), reset to waiting so new player gets fresh game
+  if (game.gameState === 'finished') {
+    if (game.autoResetTimer) { clearTimeout(game.autoResetTimer); game.autoResetTimer = null; }
+    game.gameState = 'waiting';
+    game.timeRemaining = GAME_DURATION_SECONDS;
+    game.wordPool = [];
+  }
+
   // Auto-start if this is the first player and game is still waiting
   if (game.gameState === 'waiting' && game.players.size === 1 && !game.autoStartTimer) {
     game.autoStartTimer = setTimeout(() => {

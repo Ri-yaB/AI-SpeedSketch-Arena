@@ -10,6 +10,7 @@ import {
   selectWord,
   getSnapshot,
   getAllTimeLeaderboardArray,
+  resetGame,
   GLOBAL_ROOM,
 } from './gameManager.js';
 
@@ -34,7 +35,16 @@ const io = new Server(httpServer, {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: Date.now() });
+  res.json({ status: 'ok', timestamp: Date.now(), snapshot: getSnapshot() });
+});
+
+app.post('/admin/reset', (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (key !== (process.env.ADMIN_KEY || 'dhs2026reset')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  resetGame(io);
+  res.json({ success: true, message: 'Game reset' });
 });
 
 app.get('/leaderboard', (req, res) => {
