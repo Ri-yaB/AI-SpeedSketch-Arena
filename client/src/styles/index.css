@@ -3269,3 +3269,184 @@ body {
   font-size: 20px;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   RESPONSIVE — iPad & Touch Devices
+   ============================================================ */
+
+/* ── Compact 3-column on wide tablets / small laptops (≤1100px) ── */
+@media (max-width: 1100px) {
+  .game-main {
+    grid-template-columns: 140px 1fr 132px;
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .game-brand { display: none; }
+  .game-topbar__divider { display: none; }
+
+  .game-timer__value { font-size: 16px; }
+
+  .ai-feedback-stack {
+    max-width: 300px;
+    width: 300px;
+    right: 12px;
+  }
+}
+
+/* ── Single-column stacked layout on iPad portrait / narrow (≤900px) ── */
+@media (max-width: 900px) {
+  /* Allow scrolling on the game screen since layout goes tall */
+  .game-screen {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .game-main {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    flex: none;
+    min-height: 0;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  /* Word pool: fixed-height horizontal scrollable strip */
+  .game-panel--left {
+    max-height: 172px;
+    min-height: 120px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .game-panel--left .word-pool__grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px;
+    gap: 5px;
+  }
+
+  .game-panel--left .word-card {
+    flex-shrink: 0;
+    width: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  /* Right leaderboard panel hidden — use in-game Leaderboard tab */
+  .game-panel--right { display: none; }
+
+  /* Canvas panel takes the remaining space */
+  .game-panel--center {
+    min-height: 520px;
+    flex: 1;
+  }
+
+  /* Toolbar compact */
+  .toolbar-row { gap: 6px; }
+  .brush-slider { width: 70px; }
+
+  /* AI toasts full-width on narrow screens */
+  .ai-feedback-stack {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-width: none;
+  }
+
+  .score-pops { right: 50%; }
+
+  /* Nav */
+  .app-nav { padding: 0 12px; height: 48px; }
+  .app-nav__tab { padding: 0 10px; font-size: 10px; gap: 4px; }
+  .app-nav__tab-icon { font-size: 13px; }
+
+  /* Leaderboard page */
+  .lb-page__header,
+  .lb-page__body { padding-left: 16px; padding-right: 16px; }
+  .lb-page__col-headers { display: none; }
+  .lb-page__row-words,
+  .lb-page__row-stat { display: none; }
+
+  /* Instructions page */
+  .inst-page__header,
+  .inst-page__body { padding-left: 16px; padding-right: 16px; }
+
+  /* Lobby */
+  .lobby-screen { padding: 20px 16px; }
+  .lobby-dhs-logo { top: 16px; left: 16px; }
+
+  /* Results */
+  .my-stats__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Finger / touch device improvements (coarse pointer = touchscreen) ── */
+@media (pointer: coarse) {
+  /* Larger hit targets for all interactive controls */
+  .tool-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .word-card {
+    min-height: 42px;
+    padding: 10px 12px;
+  }
+
+  .color-swatch {
+    width: 26px;
+    height: 26px;
+  }
+
+  .submit-btn {
+    padding: 16px;
+    font-size: 15px;
+    min-height: 52px;
+  }
+
+  .game-tab-btn {
+    padding: 6px 16px;
+    min-height: 40px;
+  }
+
+  .app-nav__tab {
+    min-height: 44px;
+  }
+
+  .word-pool__filter {
+    padding: 6px 2px;
+    min-height: 36px;
+  }
+
+  .brush-slider {
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .brush-slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hint-btn {
+    padding: 8px 14px;
+    min-height: 40px;
+  }
+
+  .btn {
+    padding: 16px 24px;
+    min-height: 52px;
+  }
+
+  .form-input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+    padding: 14px 18px;
+  }
+}
