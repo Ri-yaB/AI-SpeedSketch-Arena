@@ -4143,6 +4143,75 @@ body {
   font-style: italic;
 }
 
+/* AI result floating toast (always visible, even when right panel hidden) */
+.battle-ai-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  z-index: 120;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  animation: toast-slide-in 0.3s ease both;
+  /* Hidden on desktop — right panel shows it there */
+  display: none;
+}
+
+.battle-ai-toast--ok  { background: #f0fdf4; border: 1.5px solid #86efac; }
+.battle-ai-toast--fail { background: #fef2f2; border: 1.5px solid #fca5a5; }
+
+.battle-ai-toast__icon {
+  font-size: 18px;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.battle-ai-toast--ok  .battle-ai-toast__icon { color: #16a34a; }
+.battle-ai-toast--fail .battle-ai-toast__icon { color: #dc2626; }
+
+.battle-ai-toast__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.battle-ai-toast__word {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: capitalize;
+}
+
+.battle-ai-toast__msg {
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Show the floating toast on iPad and smaller (where right panel is hidden) */
+@media (max-width: 1024px) {
+  .battle-ai-toast {
+    display: flex;
+    bottom: 72px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .battle-ai-toast {
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+}
+
 /* ============================================================
    BATTLE RESULTS SCREEN
    ============================================================ */

@@ -72,6 +72,19 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
         ))}
       </div>
 
+      {/* AI result toast — always visible (floats over canvas on iPad) */}
+      {myResults[0] && (
+        <div className={`battle-ai-toast ${myResults[0].correct ? 'battle-ai-toast--ok' : 'battle-ai-toast--fail'}`}>
+          <span className="battle-ai-toast__icon">{myResults[0].correct ? '✓' : '✗'}</span>
+          <div className="battle-ai-toast__body">
+            <div className="battle-ai-toast__word">
+              {myResults[0].word} · {Math.round(myResults[0].confidence * 100)}%
+            </div>
+            <div className="battle-ai-toast__msg">{myResults[0].funnyMessage}</div>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="game-topbar">
         <div className="game-topbar__left">
