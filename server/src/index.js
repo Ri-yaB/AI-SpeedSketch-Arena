@@ -13,6 +13,15 @@ import {
   resetGame,
   GLOBAL_ROOM,
 } from './gameManager.js';
+import {
+  createRoom,
+  joinRoom,
+  startBattleGame,
+  submitBattleDrawing,
+  removePlayerFromRoom,
+  getPlayerRoom,
+  getRoomSnapshot,
+} from './battleManager.js';
 
 const PORT = process.env.PORT || 3001;
 
@@ -141,13 +150,92 @@ io.on('connection', (socket) => {
       .catch(err => console.error('[submit-drawing] Error:', err));
   });
 
+  // ================================================================
+  // BATTLE MODE
+  // ================================================================
+
+  // ----------------------------------------------------------------
+  // battle-create: Host creates a new battle room
+  // Payload: { playerName, playerEmail }
+  // ----------------------------------------------------------------
+  socket.on('battle-create', ({ playerName, playerEmail }, callback) => {
+    try {
+      const name  = playerName?.trim().slice(0, 30);
+      const email = (playerEmail || '').trim().slice(0, 100);
+      if (!name) return callback?.({ success: false, error: 'Name is required.' });
+
+      const code = createRoom(socket.id, name, email);
+      socket.join(code);
+      console.log(`[Battle] Created room ${code} by ${name}`);
+      callback?.({ success: true, code, snapshot: getRoomSnapshot(code) });
+    } catch (err) {
+      console.error('[battle-create]', err);
+      callback?.({ success: false, error: 'Could not create room.' });
+    }
+  });
+
+  // ----------------------------------------------------------------
+  // battle-join: Player joins an existing room by code
+  // Payload: { roomCode, playerName, playerEmail }
+  // ----------------------------------------------------------------
+  socket.on('battle-join', ({ roomCode, playerName, playerEmail }, callback) => {
+    try {
+      const name  = playerName?.trim().slice(0, 30);
+      const email = (playerEmail || '').trim().slice(0, 100);
+      const code  = (roomCode || '').trim().toUpperCase();
+      if (!name)  return callback?.({ success: false, error: 'Name is required.' });
+      if (!code)  return callback?.({ success: false, error: 'Room code is required.' });
+
+      const result = joinRoom(code, socket.id, name, email);
+      if (result.error) return callback?.({ success: false, error: result.error });
+
+      socket.join(result.code);
+      // Notify everyone in the room of the new player
+      io.to(result.code).emit('battle-room-update', result.snapshot);
+      console.log(`[Battle] ${name} joined room ${result.code}`);
+      callback?.({ success: true, code: result.code, snapshot: result.snapshot });
+    } catch (err) {
+      console.error('[battle-join]', err);
+      callback?.({ success: false, error: 'Could not join room.' });
+    }
+  });
+
+  // ----------------------------------------------------------------
+  // battle-start: Host starts the game
+  // Payload: { roomCode }
+  // ----------------------------------------------------------------
+  socket.on('battle-start', ({ roomCode }, callback) => {
+    try {
+      const code = (roomCode || '').trim().toUpperCase();
+      const result = startBattleGame(code, socket.id, io);
+      if (result.error) return callback?.({ success: false, error: result.error });
+      console.log(`[Battle] Room ${code} game started`);
+      callback?.({ success: true });
+    } catch (err) {
+      console.error('[battle-start]', err);
+      callback?.({ success: false, error: 'Could not start game.' });
+    }
+  });
+
+  // ----------------------------------------------------------------
+  // battle-submit: Player submits a drawing
+  // Payload: { roomCode, word, imageData, textPenalty }
+  // ----------------------------------------------------------------
+  socket.on('battle-submit', ({ roomCode, word, imageData, textPenalty }, callback) => {
+    if (!word || !imageData) return callback?.({ success: false, error: 'Missing fields.' });
+    callback?.({ success: true, queued: true });
+    const code = (roomCode || '').trim().toUpperCase();
+    submitBattleDrawing(code, socket.id, word, imageData, !!textPenalty, io)
+      .catch(err => console.error('[battle-submit]', err));
+  });
+
   // ----------------------------------------------------------------
   // disconnect
   // ----------------------------------------------------------------
   socket.on('disconnect', () => {
     console.log(`[-] Disconnected: ${socket.id}`);
     leaveGame(socket.id);
-    // Broadcast updated player list
+    removePlayerFromRoom(socket.id, io);
     const snapshot = getSnapshot();
     io.to(GLOBAL_ROOM).emit('room-update', snapshot);
   });

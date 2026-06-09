@@ -28,7 +28,7 @@ const DOODLES = [
   { id:12, x: 10, y: 38, size: 50, delay: 2.8, dur: 7,  rotate: 35,  svg: <svg viewBox="0 0 50 50" fill="none"><path d="M10 25 L38 25 M28 15 L40 25 L28 35" stroke="#1A3A8C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg> },
 ];
 
-export default function LobbyScreen({ connected, connectionError, onJoinGame }) {
+export default function LobbyScreen({ connected, connectionError, onJoinGame, onBack }) {
   const [playerName, setPlayerName] = useState('');
   const [playerEmail, setPlayerEmail] = useState('');
   const [error, setError] = useState('');
@@ -128,6 +128,11 @@ export default function LobbyScreen({ connected, connectionError, onJoinGame }) 
               >
                 {loading ? 'Joining...' : 'Play Now'}
               </button>
+              {onBack && (
+                <button className="btn btn--ghost" onClick={onBack}>
+                  ← Change Mode
+                </button>
+              )}
             </div>
           </div>
         )}

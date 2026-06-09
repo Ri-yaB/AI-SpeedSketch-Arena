@@ -1,46 +1,48 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSocket } from '../hooks/useSocket.js';
 import { useGameState } from '../hooks/useGameState.js';
+import { useBattleState } from '../hooks/useBattleState.js';
+import ModeSelectScreen from './ModeSelectScreen.jsx';
 import LobbyScreen from './LobbyScreen.jsx';
 import GameScreen from './GameScreen.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
+import BattleLobbyScreen from './BattleLobbyScreen.jsx';
+import BattleGameScreen from './BattleGameScreen.jsx';
+import BattleResultsScreen from './BattleResultsScreen.jsx';
 import LeaderboardPage from './LeaderboardPage.jsx';
 import InstructionsPage from './InstructionsPage.jsx';
 import DHSLogo from './DHSLogo.jsx';
 
 const NAV_TABS = [
-  { id: 'game',        label: 'Game',         icon: '🎮' },
-  { id: 'leaderboard', label: 'Leaderboard',  icon: '🏆' },
-  { id: 'instructions',label: 'How to Play',  icon: '📖' },
+  { id: 'game',         label: 'Game',        icon: '🎮' },
+  { id: 'leaderboard',  label: 'Leaderboard', icon: '🏆' },
+  { id: 'instructions', label: 'How to Play', icon: '📖' },
 ];
 
 export default function App() {
   const { socketRef, connected, connectionError } = useSocket();
   const [myPlayerId, setMyPlayerId] = useState(null);
-  const [activeTab, setActiveTab] = useState('game');
+  const [activeTab, setActiveTab]   = useState('game');
+  const [mode, setMode]             = useState(null); // null | 'solo' | 'battle'
   const spectatedRef = useRef(false);
 
-  const { state, actions } = useGameState(socketRef, myPlayerId);
+  const { state, actions }               = useGameState(socketRef, myPlayerId);
+  const { state: battleState, actions: battleActions } = useBattleState(socketRef, myPlayerId);
 
   useEffect(() => {
     const s = socketRef.current;
     if (!s) return;
-
-    const onConnect = () => setMyPlayerId(s.id);
+    const onConnect    = () => setMyPlayerId(s.id);
     const onDisconnect = () => setMyPlayerId(null);
-
     s.on('connect', onConnect);
     s.on('disconnect', onDisconnect);
-
     if (s.connected) setMyPlayerId(s.id);
-
     return () => {
       s.off('connect', onConnect);
       s.off('disconnect', onDisconnect);
     };
   }, [socketRef]);
 
-  // When leaderboard tab is opened and user is not a player, spectate to get live updates
   useEffect(() => {
     if (activeTab === 'leaderboard' && !state.joined && !spectatedRef.current) {
       const s = socketRef.current;
@@ -53,14 +55,61 @@ export default function App() {
 
   const { gameState, joined } = state;
 
-  // During active game, hide the nav to keep the game screen clean
-  const showNav = !(joined && gameState === 'playing');
+  // Hide nav during active games
+  const inSoloGame   = mode === 'solo'   && joined && gameState === 'playing';
+  const inBattleGame = mode === 'battle' && battleState.status === 'playing';
+  const showNav      = !inSoloGame && !inBattleGame;
 
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-  };
-
+  // ── Game content renderer ──────────────────────────────────────
   const renderGameContent = () => {
+    // No mode chosen yet → Mode Select
+    if (!mode) {
+      return (
+        <ModeSelectScreen
+          onSelectSolo={() => setMode('solo')}
+          onSelectBattle={() => setMode('battle')}
+        />
+      );
+    }
+
+    // ── Battle mode ──────────────────────────────────────────────
+    if (mode === 'battle') {
+      if (battleState.status === 'finished') {
+        return (
+          <BattleResultsScreen
+            battleState={battleState}
+            myPlayerId={myPlayerId}
+            onPlayAgain={() => {
+              battleActions.reset();
+            }}
+            onGoHome={() => {
+              battleActions.reset();
+              setMode(null);
+            }}
+          />
+        );
+      }
+      if (battleState.status === 'playing') {
+        return (
+          <BattleGameScreen
+            battleState={battleState}
+            myPlayerId={myPlayerId}
+            battleActions={battleActions}
+          />
+        );
+      }
+      // lobby or idle
+      return (
+        <BattleLobbyScreen
+          onBack={() => { battleActions.reset(); setMode(null); }}
+          battleState={battleState}
+          battleActions={battleActions}
+          myPlayerId={myPlayerId}
+        />
+      );
+    }
+
+    // ── Solo mode ────────────────────────────────────────────────
     if (joined && gameState === 'playing') {
       return <GameScreen state={state} myPlayerId={myPlayerId} actions={actions} />;
     }
@@ -135,6 +184,7 @@ export default function App() {
         connected={connected}
         connectionError={connectionError}
         onJoinGame={actions.joinGame}
+        onBack={() => setMode(null)}
       />
     );
   };
@@ -151,7 +201,7 @@ export default function App() {
               <button
                 key={tab.id}
                 className={`app-nav__tab ${activeTab === tab.id ? 'app-nav__tab--active' : ''}`}
-                onClick={() => handleTabChange(tab.id)}
+                onClick={() => setActiveTab(tab.id)}
               >
                 <span className="app-nav__tab-icon">{tab.icon}</span>
                 {tab.label}
@@ -162,10 +212,8 @@ export default function App() {
       )}
 
       <div className={`app-content ${showNav ? 'app-content--with-nav' : ''}`}>
-        {activeTab === 'game' && renderGameContent()}
-        {activeTab === 'leaderboard' && (
-          <LeaderboardPage socketRef={socketRef} />
-        )}
+        {activeTab === 'game'        && renderGameContent()}
+        {activeTab === 'leaderboard' && <LeaderboardPage socketRef={socketRef} />}
         {activeTab === 'instructions' && <InstructionsPage />}
       </div>
     </div>
