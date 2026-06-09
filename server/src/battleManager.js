@@ -4,6 +4,9 @@ import { WORD_LIST_WITH_DIFFICULTY } from './wordList.js';
 // roomCode → room object
 const rooms = new Map();
 
+// roomCode → finished battle result (persists after room cleanup, max 100 entries)
+const battleHistory = new Map();
+
 function generateCode() {
   let code;
   do { code = Math.random().toString(36).slice(2, 8).toUpperCase(); }
@@ -260,13 +263,26 @@ export function endBattleGame(code, io) {
     .sort((a, b) => b.score - a.score)
     .map((p, i) => ({ id: p.id, name: p.name, score: p.score, rank: i + 1 }));
 
-  io.to(code).emit('battle-game-over', {
+  const gameOverPayload = {
     players: finalPlayers,
     wordWinners: room.wordWinners,
     wordPool: room.wordPool,
     wordDifficulty: room.wordDifficulty,
     submissions: buildSubmissionsSnapshot({ ...room, status: 'finished' }),
+  };
+
+  io.to(code).emit('battle-game-over', gameOverPayload);
+
+  // Persist result in battle history
+  battleHistory.set(code, {
+    code,
+    endedAt: Date.now(),
+    ...gameOverPayload,
   });
+  // Cap history at 100 most recent rooms
+  if (battleHistory.size > 100) {
+    battleHistory.delete(battleHistory.keys().next().value);
+  }
 
   // Clean up room after 5 minutes
   setTimeout(() => rooms.delete(code), 5 * 60 * 1000);
@@ -308,4 +324,8 @@ export function getPlayerRoom(socketId) {
     if (room.players.has(socketId)) return code;
   }
   return null;
+}
+
+export function getBattleResult(code) {
+  return battleHistory.get((code || '').toUpperCase()) || null;
 }

@@ -21,6 +21,7 @@ import {
   removePlayerFromRoom,
   getPlayerRoom,
   getRoomSnapshot,
+  getBattleResult,
 } from './battleManager.js';
 
 const PORT = process.env.PORT || 3001;
@@ -215,6 +216,18 @@ io.on('connection', (socket) => {
       console.error('[battle-start]', err);
       callback?.({ success: false, error: 'Could not start game.' });
     }
+  });
+
+  // ----------------------------------------------------------------
+  // get-battle-leaderboard: Fetch finished battle room results by code
+  // Payload: { roomCode }
+  // ----------------------------------------------------------------
+  socket.on('get-battle-leaderboard', ({ roomCode }, callback) => {
+    const code = (roomCode || '').trim().toUpperCase();
+    if (!code) return callback?.({ success: false, error: 'Room code is required.' });
+    const result = getBattleResult(code);
+    if (!result) return callback?.({ success: false, error: 'No results found for this room code.' });
+    callback?.({ success: true, result });
   });
 
   // ----------------------------------------------------------------
