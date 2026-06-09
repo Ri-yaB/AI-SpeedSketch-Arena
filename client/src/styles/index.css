@@ -252,10 +252,10 @@ input {
 }
 
 .form-input--code {
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  letter-spacing: 0.15em;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 28px;
+  font-weight: 900;
   text-align: center;
 }
 
@@ -1883,7 +1883,7 @@ input {
   .battle-lobby__inner { max-width: 100%; gap: 16px; }
   .battle-form { padding: 20px 18px; }
   .battle-code-card { padding: 18px; }
-  .battle-code-card__code { font-size: 38px; }
+  .battle-code-card__code { font-size: 60px; }
 
   /* Results */
   .my-stats__grid { grid-template-columns: repeat(2, 1fr); }
@@ -1937,7 +1937,7 @@ input {
 @media (max-width: 600px) {
   .brush-slider { width: 56px; }
   .game-panel--center { min-height: 360px; }
-  .battle-code-card__code { font-size: 32px; }
+  .battle-code-card__code { font-size: 52px; }
 }
 
 /* ── Touch devices (coarse pointer = touchscreen) ── */
@@ -3860,9 +3860,9 @@ body {
 
 .battle-code-card__code {
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: 72px;
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   background: linear-gradient(135deg, #00e1ff, #4a3cd9);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -4498,14 +4498,13 @@ body {
   padding: 12px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 3px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
   text-align: center;
-  text-transform: uppercase;
   outline: none;
   transition: border-color 0.2s;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-display);
 }
 
 .blb-search__input:focus {
@@ -4544,15 +4543,18 @@ body {
 }
 
 .blb-result__code {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: #1A3A8C;
-  font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, #eef2ff, #dbeafe);
-  padding: 6px 20px;
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, #00e1ff, #4a3cd9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding: 4px 16px;
   border-radius: 10px;
   border: 2px solid #bfdbfe;
+  background-color: #eef2ff;
 }
 
 .blb-result__time {

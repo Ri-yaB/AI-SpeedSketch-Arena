@@ -63,10 +63,11 @@ export default function BattleLeaderboardPage({ socketRef, defaultCode }) {
         <input
           className="blb-search__input"
           type="text"
-          placeholder="Enter room code (e.g. AB12CD)"
+          placeholder="Enter room code (e.g. 42)"
           value={inputCode}
-          onChange={e => setInputCode(e.target.value.toUpperCase())}
-          maxLength={6}
+          onChange={e => setInputCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
+          maxLength={2}
+          inputMode="numeric"
           spellCheck={false}
         />
         <button className="blb-search__btn btn btn--primary" type="submit" disabled={loading}>

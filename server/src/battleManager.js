@@ -9,7 +9,7 @@ const battleHistory = new Map();
 
 function generateCode() {
   let code;
-  do { code = Math.random().toString(36).slice(2, 8).toUpperCase(); }
+  do { code = String(Math.floor(10 + Math.random() * 90)); } // 2-digit number: 10–99
   while (rooms.has(code));
   return code;
 }
@@ -80,7 +80,7 @@ export function createRoom(socketId, name, email) {
 }
 
 export function joinRoom(code, socketId, name, email) {
-  const room = rooms.get(code.toUpperCase());
+  const room = rooms.get(code.trim());
   if (!room)                     return { error: 'Room not found. Check the code and try again.' };
   if (room.status !== 'waiting') return { error: 'This game has already started.' };
   if (room.players.size >= 8)    return { error: 'Room is full (max 8 players).' };
@@ -327,5 +327,5 @@ export function getPlayerRoom(socketId) {
 }
 
 export function getBattleResult(code) {
-  return battleHistory.get((code || '').toUpperCase()) || null;
+  return battleHistory.get((code || '').trim()) || null;
 }

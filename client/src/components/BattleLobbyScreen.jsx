@@ -170,10 +170,11 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
               <input
                 className="form-input form-input--code"
                 type="text"
-                placeholder="ABC123"
+                placeholder="e.g. 42"
                 value={joinCode}
-                onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
-                maxLength={6}
+                onChange={e => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                maxLength={2}
+                inputMode="numeric"
               />
             </div>
           )}

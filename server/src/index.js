@@ -183,7 +183,7 @@ io.on('connection', (socket) => {
     try {
       const name  = playerName?.trim().slice(0, 30);
       const email = (playerEmail || '').trim().slice(0, 100);
-      const code  = (roomCode || '').trim().toUpperCase();
+      const code  = (roomCode || '').trim();
       if (!name)  return callback?.({ success: false, error: 'Name is required.' });
       if (!code)  return callback?.({ success: false, error: 'Room code is required.' });
 
@@ -207,7 +207,7 @@ io.on('connection', (socket) => {
   // ----------------------------------------------------------------
   socket.on('battle-start', ({ roomCode }, callback) => {
     try {
-      const code = (roomCode || '').trim().toUpperCase();
+      const code = (roomCode || '').trim();
       const result = startBattleGame(code, socket.id, io);
       if (result.error) return callback?.({ success: false, error: result.error });
       console.log(`[Battle] Room ${code} game started`);
@@ -223,7 +223,7 @@ io.on('connection', (socket) => {
   // Payload: { roomCode }
   // ----------------------------------------------------------------
   socket.on('get-battle-leaderboard', ({ roomCode }, callback) => {
-    const code = (roomCode || '').trim().toUpperCase();
+    const code = (roomCode || '').trim();
     if (!code) return callback?.({ success: false, error: 'Room code is required.' });
     const result = getBattleResult(code);
     if (!result) return callback?.({ success: false, error: 'No results found for this room code.' });
@@ -237,7 +237,7 @@ io.on('connection', (socket) => {
   socket.on('battle-submit', ({ roomCode, word, imageData, textPenalty }, callback) => {
     if (!word || !imageData) return callback?.({ success: false, error: 'Missing fields.' });
     callback?.({ success: true, queued: true });
-    const code = (roomCode || '').trim().toUpperCase();
+    const code = (roomCode || '').trim();
     submitBattleDrawing(code, socket.id, word, imageData, !!textPenalty, io)
       .catch(err => console.error('[battle-submit]', err));
   });
