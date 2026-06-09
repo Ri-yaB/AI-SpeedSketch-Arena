@@ -27,17 +27,20 @@ async function analyzeWithGemini(imageDataBase64, targetWord) {
     const prompt = `You are a sharp, witty Pictionary judge AI. The player was trying to draw: "${targetWord}".
 
 JUDGING RULES:
-- Mark correct=true ONLY if you are over 95% sure the drawing unmistakably shows "${targetWord}". When in doubt, mark false.
-- Mark correct=false if: blank/nearly blank canvas, random scribbles, vague resemblance, missing key features, or confidence < 95%.
+- Mark correct=true if the drawing clearly shows "${targetWord}" and you are at least 80% confident. Be fair — if it genuinely looks like the word, accept it.
+- Mark correct=false for: blank/nearly blank canvas, total scribbles, or something that clearly looks like a completely different object.
+- Do NOT be overly harsh — if the drawing has the right shape, key features, or overall feel of "${targetWord}", mark it correct.
 
-REQUIRED — write a "message" field that is a funny, specific 1-2 sentence comment about what you actually see in THIS drawing:
-- If CORRECT: celebrate what they drew well. Be specific (e.g. "Those whiskers and pointy ears are unmistakable — purrfect!"). Max 15 words.
-- If INCORRECT: roast what the drawing actually looks like to you — be specific and funny about the actual strokes/shapes you see. Do NOT say generic things like "try harder". Reference what you genuinely see (e.g. "I see a sad melting rectangle, not a phone", "Those blobs could be clouds... or maybe scrambled eggs?"). Max 15 words.
+REQUIRED FIELDS:
 
-The message MUST be specific to this drawing — never generic filler.
+"guess" — ALWAYS a specific, descriptive, funny name for what you literally see in the drawing. NEVER write "something else", "unclear", or vague answers. Examples: "a lopsided mushroom", "spaghetti explosion", "a nervous stick figure", "melting ice cream cone". Be creative and specific to the actual shapes/lines.
+
+"message" — a punchy 1-sentence roast or cheer (max 12 words) specific to THIS drawing:
+- If CORRECT: hype them up referencing something specific you saw (e.g. "Those pointy ears are unmistakable — purrfect!", "The trunk sold it immediately!")
+- If INCORRECT: a funny, specific roast of what the drawing looks like (e.g. "That's a lovely spaghetti explosion, not a ${targetWord}!", "Sir those are just sad ovals on a stick.")
 
 Reply ONLY valid JSON (no markdown, no code block):
-{"description":"one sentence of what you literally see in the drawing","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"what this drawing most looks like to you","message":"your specific funny comment about this drawing"}`;
+{"description":"one sentence of what you literally see","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"specific funny name for what you see","message":"punchy specific one-liner"}`;
 
     const result = await model.generateContent([
       { inlineData: { mimeType, data: base64Data } },
@@ -50,14 +53,15 @@ Reply ONLY valid JSON (no markdown, no code block):
     const json = JSON.parse(jsonMatch[0]);
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
-    const correct = !!json.correct && confidence > 0.92;
-    const aiGuess = json.guess || (correct ? targetWord : 'something else');
+    const correct = !!json.correct && confidence > 0.78;
+    const aiGuess = (json.guess && json.guess.trim() && json.guess.toLowerCase() !== 'something else' && json.guess.toLowerCase() !== 'unclear')
+      ? json.guess
+      : correct ? targetWord : `a very confused ${targetWord}`;
     const description = json.description || null;
 
-    // Always use Gemini's message — it's required in the prompt
     const funnyMessage = json.message || (correct
-      ? `Nailed it! That ${targetWord} was crystal clear.`
-      : `AI sees "${aiGuess}" — keep practising!`);
+      ? `That ${targetWord} was unmistakable — great drawing!`
+      : `That looks more like ${aiGuess} to me!`);
 
     return { correct, confidence, aiGuess, description, funnyMessage };
   } catch (err) {

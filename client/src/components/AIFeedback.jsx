@@ -91,9 +91,9 @@ export default function AIFeedback({ results }) {
             <>
               <div className="ai-toast__icon">✗</div>
               <div className="ai-toast__content">
-                <div className="ai-toast__title">Not Quite...</div>
+                <div className="ai-toast__title">Not Quite... ({Math.round(toast.confidence * 100)}%)</div>
                 <div className="ai-toast__message">
-                  AI saw: <em>"{toast.description || toast.aiGuess}"</em>
+                  AI saw: <em>"{toast.aiGuess || toast.description}"</em>
                 </div>
                 <div className="ai-toast__funny">{toast.funnyMessage}</div>
               </div>
