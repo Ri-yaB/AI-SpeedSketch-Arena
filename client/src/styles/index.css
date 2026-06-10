@@ -2876,27 +2876,28 @@ input {
 /* Floating AI toast — hidden on desktop, shown on ≤1024px */
 .battle-ai-toast {
   position: fixed;
-  bottom: 80px;
-  right: 16px;
+  bottom: 90px;
+  right: 20px;
   z-index: 120;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  max-width: 280px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-  animation: toast-slide-in 0.3s ease both;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  max-width: 340px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+  animation: toast-slide-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
   display: none;
+  border-width: 2px;
 }
 
-.battle-ai-toast--ok   { background: #F0FDF4; border: 1.5px solid #86EFAC; }
-.battle-ai-toast--fail { background: #FEF2F2; border: 1.5px solid #FCA5A5; }
+.battle-ai-toast--ok   { background: #F0FDF4; border: 2px solid #4ADE80; }
+.battle-ai-toast--fail { background: #FEF2F2; border: 2px solid #FCA5A5; }
 
 .battle-ai-toast__icon {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 900;
   flex-shrink: 0;
-  margin-top: 1px;
+  line-height: 1;
 }
 
 .battle-ai-toast--ok   .battle-ai-toast__icon { color: #16A34A; }
@@ -2905,19 +2906,21 @@ input {
 .battle-ai-toast__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .battle-ai-toast__word {
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-900);
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .battle-ai-toast__msg {
-  font-size: 12px;
-  color: var(--text-500);
+  font-size: 14px;
+  color: var(--text-700);
   font-style: italic;
   line-height: 1.4;
 }
@@ -3208,8 +3211,8 @@ input {
   /* Show battle AI float toast on tablet */
   .battle-ai-toast {
     display: flex;
-    bottom: 72px;
-    right: 12px;
+    bottom: 80px;
+    right: 16px;
   }
 }
 
@@ -3279,8 +3282,8 @@ input {
 
   .battle-ai-toast {
     bottom: 16px;
-    left: 12px;
-    right: 12px;
+    left: 16px;
+    right: 16px;
     max-width: none;
   }
 
