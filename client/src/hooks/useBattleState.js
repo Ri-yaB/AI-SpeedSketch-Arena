@@ -44,18 +44,22 @@ export function useBattleState(socketRef, myPlayerId) {
     };
 
     const onGameStarted = ({ wordPool, wordDifficulty, players }) => {
-      setState(prev => ({
-        ...prev,
-        status: 'playing',
-        wordPool,
-        wordDifficulty,
-        players,
-        selectedWord: null,
-        mySubmittedWords: [],
-        myResults: [],
-        submissionStatus: Object.fromEntries(wordPool.map(w => [w, { submittedCount: 0, totalPlayers: players.length }])),
-        wordWinners: {},
-      }));
+      // Brief 'starting' state so the orb shows for all players, then jump to playing
+      setState(prev => ({ ...prev, status: 'starting' }));
+      setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          status: 'playing',
+          wordPool,
+          wordDifficulty,
+          players,
+          selectedWord: null,
+          mySubmittedWords: [],
+          myResults: [],
+          submissionStatus: Object.fromEntries(wordPool.map(w => [w, { submittedCount: 0, totalPlayers: players.length }])),
+          wordWinners: {},
+        }));
+      }, 2500);
     };
 
     const onTick = ({ timeRemaining, players }) => {
