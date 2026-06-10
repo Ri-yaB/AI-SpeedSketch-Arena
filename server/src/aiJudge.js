@@ -28,19 +28,23 @@ async function analyzeWithGemini(imageDataBase64, targetWord) {
 
 JUDGING RULES:
 - Mark correct=true if the drawing clearly shows "${targetWord}" and you are at least 80% confident. Be fair — if it genuinely looks like the word, accept it.
-- Mark correct=false for: blank/nearly blank canvas, total scribbles, or something that clearly looks like a completely different object.
-- Do NOT be overly harsh — if the drawing has the right shape, key features, or overall feel of "${targetWord}", mark it correct.
+- Mark correct=false for: blank/nearly blank canvas, total scribbles, or something clearly different.
+- Do NOT be overly harsh — if the drawing has the right shape, key features, or overall feel, mark it correct.
 
-REQUIRED FIELDS:
+REQUIRED FIELDS — fill ALL four, no exceptions:
 
-"guess" — ALWAYS a specific, descriptive, funny name for what you literally see in the drawing. NEVER write "something else", "unclear", or vague answers. Examples: "a lopsided mushroom", "spaghetti explosion", "a nervous stick figure", "melting ice cream cone". Be creative and specific to the actual shapes/lines.
+"description" — one sentence describing the literal shapes/lines you see. Be specific. e.g. "a round blob with four stubby legs and a tail", "two triangles connected by a long stick", "a lumpy oval with squiggles coming out the top".
 
-"message" — a punchy 1-sentence roast or cheer (max 12 words) specific to THIS drawing:
-- If CORRECT: hype them up referencing something specific you saw (e.g. "Those pointy ears are unmistakable — purrfect!", "The trunk sold it immediately!")
-- If INCORRECT: a funny, specific roast of what the drawing looks like (e.g. "That's a lovely spaghetti explosion, not a ${targetWord}!", "Sir those are just sad ovals on a stick.")
+"guess" — a funny, creative name for what the drawing looks like. Derived directly from your description. NEVER "something else", "unclear", "a drawing", or anything vague. ALWAYS a concrete noun phrase. e.g. "a potato with legs", "a melting ice cream tower", "an angry cloud with hair".
+
+"message" — one punchy sentence (max 12 words) reacting to THIS specific drawing:
+- CORRECT: hype them up referencing a specific visual detail you saw.
+- INCORRECT: a funny roast naming what it actually looks like from your guess.
+
+"correct" and "confidence" as defined above.
 
 Reply ONLY valid JSON (no markdown, no code block):
-{"description":"one sentence of what you literally see","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"specific funny name for what you see","message":"punchy specific one-liner"}`;
+{"description":"...","correct":true_or_false,"confidence":0.0_to_1.0,"guess":"...","message":"..."}`;
 
     const result = await model.generateContent([
       { inlineData: { mimeType, data: base64Data } },
@@ -54,12 +58,18 @@ Reply ONLY valid JSON (no markdown, no code block):
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
     const correct = !!json.correct && confidence > 0.78;
-    const aiGuess = (json.guess && json.guess.trim() && json.guess.toLowerCase() !== 'something else' && json.guess.toLowerCase() !== 'unclear')
-      ? json.guess
-      : correct ? targetWord : `a very confused ${targetWord}`;
-    const description = json.description || null;
+    const description = json.description?.trim() || null;
 
-    const funnyMessage = json.message || (correct
+    const VAGUE = ['something else', 'unclear', 'unknown', 'a drawing', 'the drawing', ''];
+    const rawGuess = (json.guess || '').trim();
+    const guessIsVague = !rawGuess || VAGUE.some(v => rawGuess.toLowerCase() === v);
+
+    // Use description as the displayed guess if guess is vague — it's what the LLM actually saw
+    const aiGuess = !guessIsVague
+      ? rawGuess
+      : description || (correct ? targetWord : `a very confused ${targetWord}`);
+
+    const funnyMessage = json.message?.trim() || (correct
       ? `That ${targetWord} was unmistakable — great drawing!`
       : `That looks more like ${aiGuess} to me!`);
 
