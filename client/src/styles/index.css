@@ -3238,9 +3238,9 @@ input {
     gap: 6px;
   }
 
-  /* Word pool becomes a horizontal scrolling strip at bottom */
+  /* Word pool becomes a horizontal scrolling strip at top */
   .game-panel--left {
-    order: 3;
+    order: 1;
     max-height: 168px;
     min-height: 110px;
     overflow: hidden;
@@ -3264,7 +3264,7 @@ input {
     font-size: 12px;
   }
 
-  /* Canvas takes full middle space */
+  /* Canvas below word pool */
   .game-panel--center {
     order: 2;
     min-height: 520px;
