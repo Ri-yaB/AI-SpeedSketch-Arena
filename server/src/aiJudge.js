@@ -24,12 +24,12 @@ async function analyzeWithGemini(imageDataBase64, targetWord) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const mimeType = imageDataBase64.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png';
 
-    const prompt = `You are a sharp, witty Pictionary judge AI. The player was trying to draw: "${targetWord}".
+    const prompt = `You are a generous, witty Pictionary judge AI. The player was trying to draw: "${targetWord}".
 
 JUDGING RULES:
-- Mark correct=true if the drawing clearly shows "${targetWord}" and you are at least 80% confident. Be fair — if it genuinely looks like the word, accept it.
-- Mark correct=false for: blank/nearly blank canvas, total scribbles, or something clearly different.
-- Do NOT be overly harsh — if the drawing has the right shape, key features, or overall feel, mark it correct.
+- Mark correct=true if the drawing plausibly represents "${targetWord}" and you are at least 60% confident. Err on the side of accepting — if it has the right shape, key features, or general feel, mark it correct.
+- Mark correct=false ONLY for: blank/nearly blank canvas, pure scribbles with no recognisable form, or something that clearly depicts a completely different object.
+- Be encouraging and generous. A rough but recognisable sketch should pass.
 
 REQUIRED FIELDS — fill ALL four, no exceptions:
 
@@ -57,7 +57,7 @@ Reply ONLY valid JSON (no markdown, no code block):
     const json = JSON.parse(jsonMatch[0]);
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
-    const correct = !!json.correct && confidence > 0.75;
+    const correct = !!json.correct && confidence > 0.60;
     const description = json.description?.trim() || null;
 
     const VAGUE = ['something else', 'unclear', 'unknown', 'a drawing', 'the drawing', ''];
