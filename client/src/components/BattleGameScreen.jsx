@@ -7,8 +7,8 @@ const RANK_ICONS = ['🥇', '🥈', '🥉'];
 
 export default function BattleGameScreen({ battleState, myPlayerId, battleActions }) {
   const {
-    players, wordPool, wordDifficulty, timeRemaining,
-    selectedWord, mySubmittedWords, myResults,
+    players, currentRound, totalRounds, currentWord, currentDiff,
+    roundTimeRemaining, mySubmittedWords, myResults,
     submissionStatus, wordWinners,
   } = battleState;
 
@@ -16,20 +16,20 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
   const [toasts, setToasts] = useState([]);
   const [aiToastVisible, setAiToastVisible] = useState(false);
   const toastIdRef = useRef(0);
-  const prevResultRef = useRef(null);
   const aiToastTimerRef = useRef(null);
 
-  const isPanic  = timeRemaining <= 10 && timeRemaining > 0;
-  const isUrgent = timeRemaining <= 15;
+  const isPanic  = roundTimeRemaining <= 3 && roundTimeRemaining > 0;
+  const isUrgent = roundTimeRemaining <= 5;
 
-  const timerPct = (timeRemaining / 90) * 100;
   const myScore  = players.find(p => p.id === myPlayerId)?.score ?? 0;
   const myRank   = [...players].sort((a,b) => b.score - a.score).findIndex(p => p.id === myPlayerId) + 1;
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
-  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const hasSubmitted = currentWord && mySubmittedWords.includes(currentWord);
+  const roundStatus  = currentWord && submissionStatus[currentWord];
+  const timerPct     = (roundTimeRemaining / 10) * 100;
 
-  // Show AI result toast for 3 seconds on each new result
+  // Auto-dismiss AI toast after 3s
   useEffect(() => {
     if (!myResults[0]) return;
     setAiToastVisible(true);
@@ -38,7 +38,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
     return () => clearTimeout(aiToastTimerRef.current);
   }, [myResults[0]?.id]); // eslint-disable-line
 
-  // Toast new word-winners
+  // Word-winner toasts
   useEffect(() => {
     const latest = Object.entries(wordWinners).pop();
     if (!latest) return;
@@ -55,12 +55,6 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
   const handleSubmit = useCallback(({ word, imageData, textPenalty }) => {
     battleActions.submitDrawing({ word, imageData, textPenalty });
   }, [battleActions]);
-
-  const handleSelectWord = useCallback((word) => {
-    battleActions.selectWord(word);
-  }, [battleActions]);
-
-  const completedSet = new Set(mySubmittedWords);
 
   return (
     <div className={`game-screen battle-game-screen ${isPanic ? 'game-screen--panic' : ''}`}>
@@ -83,7 +77,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
         ))}
       </div>
 
-      {/* AI result toast — visible for 3s then auto-dismisses */}
+      {/* AI result toast */}
       {aiToastVisible && myResults[0] && (
         <div className={`battle-ai-toast ${myResults[0].correct ? 'battle-ai-toast--ok' : 'battle-ai-toast--fail'}`}>
           <span className="battle-ai-toast__icon">{myResults[0].correct ? '✓' : '✗'}</span>
@@ -101,16 +95,22 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
         <div className="game-topbar__left">
           <div className="topbar-dhs-logo"><DHSLogo height={16} /></div>
           <div className="game-topbar__divider" />
-          <div className="game-brand">
-            <span className="topbar-brand-ai">AI</span> SpeedSketch Arena
-          </div>
           <span className="battle-mode-chip">⚔️ Battle</span>
+          {currentDiff && (
+            <span className={`word-card__diff word-card__diff--${currentDiff}`}>
+              {currentDiff[0].toUpperCase()}
+            </span>
+          )}
         </div>
 
         <div className="game-topbar__center">
+          <div className="battle-round-indicator">
+            <span className="battle-round-indicator__label">Round</span>
+            <span className="battle-round-indicator__num">{currentRound}/{totalRounds}</span>
+          </div>
           <div className={`game-timer ${isUrgent ? 'game-timer--urgent' : ''} ${isPanic ? 'game-timer--panic' : ''}`}>
             {isUrgent && <span className="game-timer__pulse" />}
-            <span className="game-timer__value">{formatTime(timeRemaining)}</span>
+            <span className="game-timer__value">0:{String(roundTimeRemaining).padStart(2, '0')}</span>
             <div className="game-timer__bar">
               <div className="game-timer__fill" style={{ width: `${timerPct}%` }} />
             </div>
@@ -133,60 +133,24 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
 
       {/* Main layout */}
       <div className="game-main battle-game-main">
-        {/* Left — Word pool */}
-        <div className="game-panel game-panel--left">
-          <div className="word-pool">
-            <div className="word-pool__header">
-              <span className="word-pool__title">Shared Words</span>
-              <span className="word-pool__count">{mySubmittedWords.length}/{wordPool.length}</span>
-            </div>
-            <div className="word-pool__grid battle-word-grid">
-              {wordPool.map(word => {
-                const submitted  = completedSet.has(word);
-                const isSelected = selectedWord === word;
-                const diff       = wordDifficulty[word];
-                const status     = submissionStatus[word] || { submittedCount: 0, totalPlayers: players.length };
-                const winner     = wordWinners[word];
-                const iWon       = winner?.winnerId === myPlayerId;
-
-                return (
-                  <button
-                    key={word}
-                    className={[
-                      'word-card battle-word-card',
-                      isSelected  ? 'word-card--selected' : '',
-                      submitted   ? 'word-card--completed' : '',
-                      iWon        ? 'battle-word-card--won' : '',
-                      winner && !iWon ? 'battle-word-card--lost' : '',
-                    ].join(' ')}
-                    onClick={() => { if (!submitted) handleSelectWord(word); }}
-                    disabled={submitted}
-                    title={submitted ? `${word} — submitted` : `Draw: ${word}`}
-                  >
-                    {submitted && !winner && <span className="word-card__check">✓</span>}
-                    {iWon        && <span className="word-card__check">🏆</span>}
-                    {winner && !iWon && winner.winnerId && <span className="word-card__check">✗</span>}
-                    <span className="word-card__text">{word}</span>
-                    {diff && !submitted && (
-                      <span className={`word-card__diff word-card__diff--${diff}`}>{diff[0].toUpperCase()}</span>
-                    )}
-                    {/* Submission counter */}
-                    <span className="battle-word-count">
-                      {status.submittedCount}/{status.totalPlayers}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Center — Canvas */}
+        {/* Center — Canvas (full width on mobile) */}
         <div className="game-panel game-panel--center">
+          {hasSubmitted && (
+            <div className="battle-submitted-overlay">
+              <div className="battle-submitted-overlay__icon">✓</div>
+              <div className="battle-submitted-overlay__text">Submitted!</div>
+              <div className="battle-submitted-overlay__sub">
+                {roundStatus
+                  ? `${roundStatus.submittedCount}/${roundStatus.totalPlayers} players done`
+                  : 'Waiting for others…'}
+              </div>
+            </div>
+          )}
           <DrawingCanvas
-            selectedWord={selectedWord}
+            key={currentRound}
+            selectedWord={currentWord}
             onSubmit={handleSubmit}
-            disabled={timeRemaining <= 0}
+            disabled={roundTimeRemaining <= 0 || hasSubmitted}
             hintsRemaining={0}
             hintWord={null}
             onUseHint={() => {}}

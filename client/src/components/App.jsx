@@ -11,14 +11,12 @@ import BattleGameScreen from './BattleGameScreen.jsx';
 import BattleResultsScreen from './BattleResultsScreen.jsx';
 import LeaderboardPage from './LeaderboardPage.jsx';
 import BattleLeaderboardPage from './BattleLeaderboardPage.jsx';
-import InstructionsPage from './InstructionsPage.jsx';
 import DHSLogo from './DHSLogo.jsx';
 import DHSOrb from './DHSOrb.jsx';
 
 const NAV_TABS = [
-  { id: 'game',         label: 'Game',        icon: '🎮' },
-  { id: 'leaderboard',  label: 'Leaderboard', icon: '🏆' },
-  { id: 'instructions', label: 'How to Play', icon: '📖' },
+  { id: 'game',        label: 'Game',        icon: '🎮' },
+  { id: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
 ];
 
 export default function App() {
@@ -60,7 +58,7 @@ export default function App() {
 
   // Hide nav during active games
   const inSoloGame   = mode === 'solo'   && joined && gameState === 'playing';
-  const inBattleGame = mode === 'battle' && (battleState.status === 'playing' || battleState.status === 'starting');
+  const inBattleGame = mode === 'battle' && (battleState.status === 'playing' || battleState.status === 'starting' || battleState.status === 'finished');
   const showNav      = !inSoloGame && !inBattleGame;
 
   // ── Game content renderer ──────────────────────────────────────
@@ -189,7 +187,6 @@ export default function App() {
             )}
           </div>
         )}
-        {activeTab === 'instructions' && <InstructionsPage />}
       </div>
     </div>
   );

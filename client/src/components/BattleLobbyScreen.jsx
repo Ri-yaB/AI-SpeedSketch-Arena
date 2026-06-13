@@ -1,40 +1,60 @@
 import React, { useState } from 'react';
 import DHSLogo from './DHSLogo.jsx';
 
+const BATTLE_INSTRUCTIONS = [
+  { icon: '⚔️', text: '12 rounds · 10s each · everyone draws the same word' },
+  { icon: '🤖', text: 'Highest AI confidence wins the round — Easy +2 · Hard +4 pts' },
+  { icon: '🚫', text: "Don't write the word — detected and costs 1 pt!" },
+];
+
 export default function BattleLobbyScreen({ onBack, battleState, battleActions, myPlayerId }) {
   const { status, roomCode, isHost, players } = battleState;
 
-  const [tab, setTab]         = useState('create'); // 'create' | 'join'
-  const [name, setName]       = useState('');
-  const [email, setEmail]     = useState('');
+  const [tab, setTab]           = useState('create'); // 'create' | 'join'
+  const [name, setName]         = useState('');
+  const [email, setEmail]       = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const [copied, setCopied]   = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const [copied, setCopied]     = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [pendingAction, setPendingAction]       = useState(null); // 'create' | 'join'
 
-  // Already in a lobby room
   const inLobby = status === 'lobby';
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!name.trim()) return setError('Name is required.');
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) return setError('Valid email is required.');
-    setLoading(true);
-    const res = await battleActions.createRoom(name.trim(), email.trim());
-    if (!res.success) setError(res.error || 'Could not create room.');
-    setLoading(false);
+  const validateForm = () => {
+    if (!name.trim()) { setError('Name is required.'); return false; }
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) { setError('Valid email is required.'); return false; }
+    if (tab === 'join' && !joinCode.trim()) { setError('Room code is required.'); return false; }
+    return true;
   };
 
-  const handleJoin = async (e) => {
+  const handleCreate = (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim())     return setError('Name is required.');
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) return setError('Valid email is required.');
-    if (!joinCode.trim()) return setError('Room code is required.');
+    if (!validateForm()) return;
+    setPendingAction('create');
+    setShowInstructions(true);
+  };
+
+  const handleJoin = (e) => {
+    e.preventDefault();
+    setError('');
+    if (!validateForm()) return;
+    setPendingAction('join');
+    setShowInstructions(true);
+  };
+
+  const handleContinue = async () => {
+    setShowInstructions(false);
     setLoading(true);
-    const res = await battleActions.joinRoom(joinCode.trim(), name.trim(), email.trim());
-    if (!res.success) setError(res.error || 'Could not join room.');
+    if (pendingAction === 'create') {
+      const res = await battleActions.createRoom(name.trim(), email.trim());
+      if (!res.success) setError(res.error || 'Could not create room.');
+    } else {
+      const res = await battleActions.joinRoom(joinCode.trim(), name.trim(), email.trim());
+      if (!res.success) setError(res.error || 'Could not join room.');
+    }
     setLoading(false);
   };
 
@@ -52,7 +72,45 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── In lobby (room created/joined) ────────────────────────────
+  // ── Instructions overlay ───────────────────────────────────────────────────
+  if (showInstructions) {
+    return (
+      <div className="battle-lobby">
+        <div className="battle-lobby__inner">
+          <div className="battle-lobby__header">
+            <DHSLogo height={28} />
+            <span className="battle-lobby__mode-tag">⚔️ Battle Mode</span>
+          </div>
+          <div className="inst-inline">
+            <div className="inst-inline__title">⚔️ How Battle Mode Works</div>
+            <div className="inst-inline__steps">
+              {BATTLE_INSTRUCTIONS.map((item, i) => (
+                <div key={i} className="inst-inline__step">
+                  <span className="inst-inline__step-icon">{item.icon}</span>
+                  <span className="inst-inline__step-text">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="lobby-cta-buttons">
+              <button
+                className="btn btn--primary btn--large"
+                onClick={handleContinue}
+                disabled={loading}
+              >
+                {loading ? 'Loading…' : pendingAction === 'create' ? 'Create Room →' : 'Join Room →'}
+              </button>
+              <button className="btn btn--ghost" onClick={() => setShowInstructions(false)}>
+                ← Back
+              </button>
+            </div>
+            {error && <div className="battle-error">{error}</div>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── In lobby (room created/joined) ─────────────────────────────────────────
   if (inLobby) {
     return (
       <div className="battle-lobby">
@@ -63,7 +121,6 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <button className="battle-lobby__back" onClick={onBack}>← Back</button>
           </div>
 
-          {/* Room code */}
           <div className="battle-code-card">
             <div className="battle-code-card__label">Room Code</div>
             <div className="battle-code-card__code">{roomCode}</div>
@@ -73,7 +130,6 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <p className="battle-code-card__hint">Share this code with players to join</p>
           </div>
 
-          {/* Player list */}
           <div className="battle-players-card">
             <div className="battle-players-card__title">
               Players ({players.length}/8)
@@ -95,10 +151,9 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             </div>
           </div>
 
-          {/* Word info */}
           <div className="battle-info-card">
-            <span>🃏</span>
-            <span>10 shared words — 4 Easy · 4 Medium · 2 Hard · 90 seconds</span>
+            <span>⚔️</span>
+            <span>12 rounds — 4 Easy · 4 Medium · 4 Hard · 10 seconds each</span>
           </div>
 
           {error && <div className="battle-error">{error}</div>}
@@ -121,7 +176,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     );
   }
 
-  // ── Pre-join: create or join form ─────────────────────────────
+  // ── Pre-join: create or join form ──────────────────────────────────────────
   return (
     <div className="battle-lobby">
       <div className="battle-lobby__inner">
@@ -184,19 +239,9 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             className={`btn btn--primary btn--large ${loading ? 'btn--disabled' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Loading…' : tab === 'create' ? 'Create Room' : 'Join Room'}
+            {loading ? 'Loading…' : tab === 'create' ? 'Create Room →' : 'Join Room →'}
           </button>
         </form>
-
-        <div className="battle-rules">
-          <div className="battle-rules__title">How Battle Mode Works</div>
-          <div className="battle-rules__list">
-            <div className="battle-rule">🃏 Everyone gets the same 10 words (4 Easy + 4 Medium + 2 Hard)</div>
-            <div className="battle-rule">🎨 Draw any word in 90 seconds — the AI scores your drawing</div>
-            <div className="battle-rule">🏆 For each word, the player with the highest AI confidence wins the points</div>
-            <div className="battle-rule">⚡ Winners announced live as soon as all players submit for a word</div>
-          </div>
-        </div>
       </div>
     </div>
   );

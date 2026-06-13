@@ -57,7 +57,7 @@ Reply ONLY valid JSON (no markdown, no code block):
     const json = JSON.parse(jsonMatch[0]);
 
     const confidence = Math.min(1, Math.max(0, parseFloat(json.confidence) || 0));
-    const correct = !!json.correct && confidence > 0.78;
+    const correct = !!json.correct && confidence > 0.75;
     const description = json.description?.trim() || null;
 
     const VAGUE = ['something else', 'unclear', 'unknown', 'a drawing', 'the drawing', ''];

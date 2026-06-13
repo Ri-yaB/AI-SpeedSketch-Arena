@@ -1,19 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const INITIAL = {
-  status: 'idle',       // idle | lobby | playing | finished
+  status: 'idle',       // idle | lobby | starting | playing | finished
   roomCode: null,
   isHost: false,
   players: [],
   wordPool: [],
   wordDifficulty: {},
-  timeRemaining: 90,
-  selectedWord: null,
-  // per-player: which words I've submitted
+  // current round state
+  currentRound: 0,
+  totalRounds: 12,
+  currentWord: null,
+  currentDiff: null,
+  roundTimeRemaining: 10,
+  // per-player results this round
   mySubmittedWords: [],
-  // last AI result for me { word, confidence, correct, aiGuess, funnyMessage }
   myResults: [],
-  // submissions status: { word: { submittedCount, totalPlayers } }
+  // submission status per word: { word: { submittedCount, totalPlayers } }
   submissionStatus: {},
   // word → { winnerId, winnerName, isTie, topConfidence }
   wordWinners: {},
@@ -39,31 +42,39 @@ export function useBattleState(socketRef, myPlayerId) {
         players: snapshot.players,
         wordPool: snapshot.wordPool || [],
         wordDifficulty: snapshot.wordDifficulty || {},
-        timeRemaining: snapshot.timeRemaining,
       }));
     };
 
     const onGameStarted = ({ wordPool, wordDifficulty, players }) => {
-      // Brief 'starting' state so the orb shows for all players, then jump to playing
-      setState(prev => ({ ...prev, status: 'starting' }));
-      setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          status: 'playing',
-          wordPool,
-          wordDifficulty,
-          players,
-          selectedWord: null,
-          mySubmittedWords: [],
-          myResults: [],
-          submissionStatus: Object.fromEntries(wordPool.map(w => [w, { submittedCount: 0, totalPlayers: players.length }])),
-          wordWinners: {},
-        }));
-      }, 2500);
+      // Show orb animation ('starting'), then transition to 'playing' when first round arrives
+      setState(prev => ({
+        ...prev,
+        status: 'starting',
+        wordPool,
+        wordDifficulty,
+        players,
+        mySubmittedWords: [],
+        myResults: [],
+        wordWinners: {},
+        submissionStatus: Object.fromEntries((wordPool || []).map(w => [w, { submittedCount: 0, totalPlayers: players.length }])),
+      }));
     };
 
-    const onTick = ({ timeRemaining, players }) => {
-      setState(prev => ({ ...prev, timeRemaining, players }));
+    const onRoundStart = ({ round, totalRounds, word, difficulty, timeRemaining, players }) => {
+      setState(prev => ({
+        ...prev,
+        status: 'playing',
+        currentRound: round,
+        totalRounds,
+        currentWord: word,
+        currentDiff: difficulty,
+        roundTimeRemaining: timeRemaining,
+        players,
+      }));
+    };
+
+    const onRoundTick = ({ timeRemaining }) => {
+      setState(prev => ({ ...prev, roundTimeRemaining: timeRemaining }));
     };
 
     const onDrawingResult = (result) => {
@@ -110,22 +121,24 @@ export function useBattleState(socketRef, myPlayerId) {
       }));
     };
 
-    s.on('battle-room-update',      onRoomUpdate);
-    s.on('battle-game-started',     onGameStarted);
-    s.on('battle-tick',             onTick);
-    s.on('battle-drawing-result',   onDrawingResult);
+    s.on('battle-room-update',        onRoomUpdate);
+    s.on('battle-game-started',       onGameStarted);
+    s.on('battle-round-start',        onRoundStart);
+    s.on('battle-round-tick',         onRoundTick);
+    s.on('battle-drawing-result',     onDrawingResult);
     s.on('battle-submissions-update', onSubmissionsUpdate);
-    s.on('battle-word-winner',      onWordWinner);
-    s.on('battle-game-over',        onGameOver);
+    s.on('battle-word-winner',        onWordWinner);
+    s.on('battle-game-over',          onGameOver);
 
     return () => {
-      s.off('battle-room-update',      onRoomUpdate);
-      s.off('battle-game-started',     onGameStarted);
-      s.off('battle-tick',             onTick);
-      s.off('battle-drawing-result',   onDrawingResult);
+      s.off('battle-room-update',        onRoomUpdate);
+      s.off('battle-game-started',       onGameStarted);
+      s.off('battle-round-start',        onRoundStart);
+      s.off('battle-round-tick',         onRoundTick);
+      s.off('battle-drawing-result',     onDrawingResult);
       s.off('battle-submissions-update', onSubmissionsUpdate);
-      s.off('battle-word-winner',      onWordWinner);
-      s.off('battle-game-over',        onGameOver);
+      s.off('battle-word-winner',        onWordWinner);
+      s.off('battle-game-over',          onGameOver);
     };
   }, [socketRef]);
 
@@ -172,15 +185,10 @@ export function useBattleState(socketRef, myPlayerId) {
   }, [socketRef, state.roomCode]);
 
   const submitDrawing = useCallback(({ word, imageData, textPenalty }) => {
-    setState(prev => ({ ...prev, selectedWord: null }));
     socketRef.current?.emit('battle-submit', {
       roomCode: state.roomCode, word, imageData, textPenalty,
     });
   }, [socketRef, state.roomCode]);
-
-  const selectWord = useCallback((word) => {
-    setState(prev => ({ ...prev, selectedWord: word }));
-  }, []);
 
   const reset = useCallback(() => {
     setState(INITIAL);
@@ -188,6 +196,6 @@ export function useBattleState(socketRef, myPlayerId) {
 
   return {
     state,
-    actions: { createRoom, joinRoom, startGame, submitDrawing, selectWord, reset },
+    actions: { createRoom, joinRoom, startGame, submitDrawing, reset },
   };
 }

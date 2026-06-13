@@ -7,9 +7,13 @@ const rooms = new Map();
 // roomCode → finished battle result (persists after room cleanup, max 100 entries)
 const battleHistory = new Map();
 
+const ROUND_SECONDS  = 10;
+const TOTAL_WORDS    = 12;   // 4E + 4M + 4H
+const ROUND_PAUSE_MS = 2500; // brief pause between rounds to show result
+
 function generateCode() {
   let code;
-  do { code = String(Math.floor(10 + Math.random() * 90)); } // 2-digit number: 10–99
+  do { code = String(Math.floor(10 + Math.random() * 90)); }
   while (rooms.has(code));
   return code;
 }
@@ -18,8 +22,8 @@ function pickBattleWords() {
   const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
   const easy   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'easy')).slice(0, 4);
   const medium = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'medium')).slice(0, 4);
-  const hard   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'hard')).slice(0, 2);
-  return [...easy, ...medium, ...hard]; // array of [word, difficulty]
+  const hard   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'hard')).slice(0, 4);
+  return [...easy, ...medium, ...hard]; // 12 [word, difficulty] pairs
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -47,6 +51,8 @@ function buildSubmissionsSnapshot(room) {
 export function getRoomSnapshot(code) {
   const room = rooms.get(code);
   if (!room) return null;
+  const currentWord = room.wordPairs[room.currentRound]?.word || null;
+  const currentDiff = room.wordPairs[room.currentRound]?.difficulty || null;
   return {
     code: room.code,
     hostId: room.hostId,
@@ -54,7 +60,11 @@ export function getRoomSnapshot(code) {
     players: buildPlayerSnapshot(room),
     wordPool: room.wordPool,
     wordDifficulty: room.wordDifficulty,
-    timeRemaining: room.timeRemaining,
+    currentRound: room.currentRound,
+    totalRounds: room.wordPairs.length,
+    currentWord,
+    currentDiff,
+    roundTimeRemaining: room.roundTimeRemaining,
     submissions: buildSubmissionsSnapshot(room),
     wordWinners: { ...room.wordWinners },
   };
@@ -70,9 +80,11 @@ export function createRoom(socketId, name, email) {
     players: new Map(),
     wordPool: [], wordDifficulty: {},
     wordPairs: [],
-    timeRemaining: 90, timer: null,
-    submissions: {},  // word → { socketId: { confidence, correct } }
-    wordWinners: {},  // word → socketId | 'tie'
+    currentRound: -1,
+    roundTimeRemaining: ROUND_SECONDS,
+    roundTimer: null,
+    submissions: {},
+    wordWinners: {},
   };
   room.players.set(socketId, { id: socketId, name, email, score: 0, submittedWords: [] });
   rooms.set(code, room);
@@ -96,13 +108,13 @@ export function startBattleGame(code, hostSocketId, io) {
   if (room.players.size < 2)          return { error: 'Need at least 2 players to start.' };
 
   const pairs = pickBattleWords();
-  room.wordPairs     = pairs.map(([w, d]) => ({ word: w, difficulty: d }));
-  room.wordPool      = pairs.map(([w]) => w);
+  room.wordPairs      = pairs.map(([w, d]) => ({ word: w, difficulty: d }));
+  room.wordPool       = pairs.map(([w]) => w);
   room.wordDifficulty = Object.fromEntries(pairs);
-  room.submissions   = Object.fromEntries(pairs.map(([w]) => [w, {}]));
-  room.wordWinners   = {};
-  room.status        = 'playing';
-  room.timeRemaining = 90;
+  room.submissions    = Object.fromEntries(pairs.map(([w]) => [w, {}]));
+  room.wordWinners    = {};
+  room.status         = 'playing';
+  room.currentRound   = -1;
 
   io.to(code).emit('battle-game-started', {
     wordPool: room.wordPool,
@@ -110,19 +122,64 @@ export function startBattleGame(code, hostSocketId, io) {
     players: buildPlayerSnapshot(room),
   });
 
-  room.timer = setInterval(() => {
-    room.timeRemaining--;
-    io.to(code).emit('battle-tick', {
-      timeRemaining: room.timeRemaining,
-      players: buildPlayerSnapshot(room),
-    });
-    if (room.timeRemaining <= 0) {
-      clearInterval(room.timer); room.timer = null;
-      endBattleGame(code, io);
-    }
-  }, 1000);
+  // First round starts after client orb animation finishes (~3s)
+  setTimeout(() => startRound(code, 0, io), 3000);
 
   return { ok: true };
+}
+
+function startRound(code, roundIdx, io) {
+  const room = rooms.get(code);
+  if (!room || room.status !== 'playing') return;
+  if (roundIdx >= room.wordPairs.length) {
+    endBattleGame(code, io);
+    return;
+  }
+
+  const { word, difficulty } = room.wordPairs[roundIdx];
+  room.currentRound       = roundIdx;
+  room.roundTimeRemaining = ROUND_SECONDS;
+
+  io.to(code).emit('battle-round-start', {
+    round: roundIdx + 1,
+    totalRounds: room.wordPairs.length,
+    word,
+    difficulty,
+    timeRemaining: ROUND_SECONDS,
+    players: buildPlayerSnapshot(room),
+  });
+
+  room.roundTimer = setInterval(() => {
+    room.roundTimeRemaining--;
+    io.to(code).emit('battle-round-tick', {
+      round: roundIdx + 1,
+      timeRemaining: room.roundTimeRemaining,
+    });
+    if (room.roundTimeRemaining <= 0) {
+      clearInterval(room.roundTimer);
+      room.roundTimer = null;
+      resolveAndAdvance(code, roundIdx, io);
+    }
+  }, 1000);
+}
+
+function resolveAndAdvance(code, roundIdx, io) {
+  const room = rooms.get(code);
+  if (!room || room.status !== 'playing') return;
+
+  const word = room.wordPairs[roundIdx]?.word;
+  if (!word) return;
+
+  resolveWord(code, word, io);
+
+  setTimeout(() => {
+    const next = roundIdx + 1;
+    if (next >= room.wordPairs.length) {
+      endBattleGame(code, io);
+    } else {
+      startRound(code, next, io);
+    }
+  }, ROUND_PAUSE_MS);
 }
 
 export async function submitBattleDrawing(code, socketId, word, imageData, textPenalty, io) {
@@ -132,14 +189,16 @@ export async function submitBattleDrawing(code, socketId, word, imageData, textP
   const player = room.players.get(socketId);
   if (!player) return;
 
-  // Prevent duplicate submissions for the same word
+  // Only accept submission for the current round's word
+  const currentWord = room.wordPairs[room.currentRound]?.word;
+  if (word !== currentWord) return;
+
+  // Prevent duplicate submission
   if (room.submissions[word]?.[socketId]) return;
 
-  // Notify submitter immediately
   const socket = io.sockets.sockets.get(socketId);
   socket?.emit('battle-drawing-ack', { word });
 
-  // Apply text penalty immediately to player's score
   if (textPenalty) {
     player.score = Math.max(0, player.score - 1);
     socket?.emit('battle-drawing-result', {
@@ -162,7 +221,6 @@ export async function submitBattleDrawing(code, socketId, word, imageData, textP
     };
     player.submittedWords.push(word);
 
-    // Tell submitter their result
     socket?.emit('battle-drawing-result', {
       word,
       confidence: result.confidence,
@@ -172,18 +230,17 @@ export async function submitBattleDrawing(code, socketId, word, imageData, textP
       funnyMessage: result.funnyMessage,
     });
 
-    // Broadcast updated submission counts to all in room
     io.to(code).emit('battle-submissions-update', {
       word,
       submittedCount: Object.keys(room.submissions[word]).length,
       totalPlayers: room.players.size,
     });
 
-    // If ALL players submitted for this word → resolve immediately
+    // All players submitted → end round early
     if (Object.keys(room.submissions[word]).length >= room.players.size) {
-      resolveWord(code, word, io);
+      if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
+      resolveAndAdvance(code, room.currentRound, io);
     }
-
   } catch (err) {
     console.error('[Battle] Drawing analysis error:', err);
   }
@@ -196,6 +253,14 @@ function resolveWord(code, word, io) {
   const subs = room.submissions[word];
   if (!subs || Object.keys(subs).length === 0) {
     room.wordWinners[word] = null;
+    io.to(code).emit('battle-word-winner', {
+      word,
+      winnerId: null,
+      winnerName: null,
+      isTie: false,
+      topConfidence: 0,
+      players: buildPlayerSnapshot(room),
+    });
     return;
   }
 
@@ -218,7 +283,6 @@ function resolveWord(code, word, io) {
 
   if (tie) {
     room.wordWinners[word] = 'tie';
-    // Both top players get points
     for (const [pid, s] of Object.entries(subs)) {
       if (s.confidence === topConfidence) {
         const p = room.players.get(pid);
@@ -248,14 +312,15 @@ export function endBattleGame(code, io) {
   if (!room || room.status === 'finished') return;
 
   room.status = 'finished';
-  if (room.timer) { clearInterval(room.timer); room.timer = null; }
+  if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
 
-  // Resolve any words not yet decided
   for (const word of room.wordPool) {
-    if (room.wordWinners[word] === undefined && Object.keys(room.submissions[word] || {}).length > 0) {
-      resolveWord(code, word, io);
-    } else if (room.wordWinners[word] === undefined) {
-      room.wordWinners[word] = null; // nobody drew this
+    if (room.wordWinners[word] === undefined) {
+      if (Object.keys(room.submissions[word] || {}).length > 0) {
+        resolveWord(code, word, io);
+      } else {
+        room.wordWinners[word] = null;
+      }
     }
   }
 
@@ -273,18 +338,11 @@ export function endBattleGame(code, io) {
 
   io.to(code).emit('battle-game-over', gameOverPayload);
 
-  // Persist result in battle history
-  battleHistory.set(code, {
-    code,
-    endedAt: Date.now(),
-    ...gameOverPayload,
-  });
-  // Cap history at 100 most recent rooms
+  battleHistory.set(code, { code, endedAt: Date.now(), ...gameOverPayload });
   if (battleHistory.size > 100) {
     battleHistory.delete(battleHistory.keys().next().value);
   }
 
-  // Clean up room after 5 minutes
   setTimeout(() => rooms.delete(code), 5 * 60 * 1000);
 }
 
@@ -294,20 +352,18 @@ export function removePlayerFromRoom(socketId, io) {
     room.players.delete(socketId);
 
     if (room.players.size === 0) {
-      if (room.timer) clearInterval(room.timer);
+      if (room.roundTimer) clearInterval(room.roundTimer);
       rooms.delete(code);
       return;
     }
 
-    // Re-assign host if needed
     if (room.hostId === socketId) {
       room.hostId = room.players.keys().next().value;
     }
 
     if (room.status === 'playing') {
       if (room.players.size < 2) {
-        // Not enough players — end game
-        if (room.timer) { clearInterval(room.timer); room.timer = null; }
+        if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
         endBattleGame(code, io);
       } else {
         io.to(code).emit('battle-room-update', getRoomSnapshot(code));

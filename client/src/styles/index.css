@@ -3,36 +3,36 @@
    Deep Navy · Electric Blue · Sky Accent
    ============================================================ */
 
-/* ---- Custom Properties ---- */
+/* ---- Custom Properties — Dark Theme ---- */
 :root {
   /* Color palette */
-  --navy:      #1A3A8C;
-  --blue:      #2D5BE3;
-  --sky:       #0EA5E9;
-  --success:   #10B981;
-  --danger:    #EF4444;
-  --amber:     #F59E0B;
+  --navy:      #4F8EF7;
+  --blue:      #3B82F6;
+  --sky:       #38BDF8;
+  --success:   #34D399;
+  --danger:    #F87171;
+  --amber:     #FBBF24;
 
   /* Text */
-  --text-900:  #0F172A;
-  --text-700:  #334155;
-  --text-500:  #64748B;
-  --text-400:  #94A3B8;
+  --text-900:  #F1F5F9;
+  --text-700:  #CBD5E1;
+  --text-500:  #94A3B8;
+  --text-400:  #4B5E7A;
 
-  /* Surfaces */
-  --surface-0: #FFFFFF;
-  --surface-1: #F8FAFF;
-  --surface-2: #F1F5F9;
+  /* Surfaces — dark */
+  --surface-0: #1E2640;
+  --surface-1: #131929;
+  --surface-2: #0B0F1A;
 
   /* Borders */
-  --border:    #E2E8F0;
+  --border:    rgba(255,255,255,0.09);
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #1A3A8C 0%, #2D5BE3 100%);
+  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #4F8EF7 100%);
 
   /* Card shadow */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.05);
-  --shadow-hover: 0 4px 12px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 6px 20px rgba(0,0,0,0.5);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.6);
 
   /* Typography */
   --font-display: 'Orbitron', 'Segoe UI', sans-serif;
@@ -63,7 +63,7 @@ html, body, #root {
 }
 
 body {
-  background: var(--surface-0);
+  background: var(--surface-1);
   color: var(--text-900);
   font-family: var(--font-body);
   font-size: 14px;
@@ -187,9 +187,9 @@ input {
   flex: 1;
   height: 100%;
   background:
-    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(45,91,227,0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(14,165,233,0.04) 0%, transparent 60%),
-    var(--surface-0);
+    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(79,142,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    var(--surface-1);
   overflow: auto;
   padding: 40px 24px 24px;
   position: relative;
@@ -325,7 +325,7 @@ input {
 
 .form-input:focus {
   border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(26,58,140,0.08);
+  box-shadow: 0 0 0 3px rgba(79,142,247,0.2);
 }
 
 .form-input--code {
@@ -843,6 +843,7 @@ input {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* ============================================================
@@ -2347,9 +2348,9 @@ input {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 80% 60% at 30% -10%, rgba(45,91,227,0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(14,165,233,0.04) 0%, transparent 60%),
-    var(--surface-0);
+    radial-gradient(ellipse 80% 60% at 30% -10%, rgba(79,142,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    var(--surface-1);
   overflow: auto;
   position: relative;
 }
@@ -2410,13 +2411,13 @@ input {
 }
 
 .mode-card--solo:hover {
-  border-color: rgba(26,58,140,0.4);
-  box-shadow: 0 12px 40px rgba(26,58,140,0.12);
+  border-color: rgba(79,142,247,0.5);
+  box-shadow: 0 12px 40px rgba(79,142,247,0.15);
 }
 
 .mode-card--battle {
-  border-color: rgba(239,68,68,0.25);
-  background: linear-gradient(160deg, var(--surface-0) 60%, rgba(239,68,68,0.03));
+  border-color: rgba(248,113,113,0.25);
+  background: linear-gradient(160deg, var(--surface-0) 60%, rgba(248,113,113,0.06));
 }
 
 .mode-card--battle:hover {
@@ -2873,6 +2874,109 @@ input {
   font-style: italic;
 }
 
+/* Battle round indicator in topbar */
+.battle-round-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.battle-round-indicator__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.battle-round-indicator__num {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+/* Submitted overlay on canvas */
+.battle-submitted-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(13,17,26,0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.battle-submitted-overlay__icon {
+  font-size: 48px;
+  color: var(--success);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.battle-submitted-overlay__text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--success);
+  letter-spacing: 0.04em;
+}
+
+.battle-submitted-overlay__sub {
+  font-size: 13px;
+  color: var(--text-500);
+}
+
+/* Inline instructions (solo & battle pre-game) */
+.inst-inline {
+  width: 100%;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inst-inline__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: 0.02em;
+}
+
+.inst-inline__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inst-inline__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.inst-inline__step-icon {
+  font-size: 16px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.inst-inline__step-text {
+  font-size: 13px;
+  color: var(--text-700);
+  line-height: 1.5;
+}
+
 /* Floating AI toast — hidden on desktop, shown on ≤1024px */
 .battle-ai-toast {
   position: fixed;
@@ -2890,8 +2994,8 @@ input {
   border-width: 2px;
 }
 
-.battle-ai-toast--ok   { background: #F0FDF4; border: 2px solid #4ADE80; }
-.battle-ai-toast--fail { background: #FEF2F2; border: 2px solid #FCA5A5; }
+.battle-ai-toast--ok   { background: rgba(52,211,153,0.12); border: 2px solid rgba(52,211,153,0.5); }
+.battle-ai-toast--fail { background: rgba(248,113,113,0.12); border: 2px solid rgba(248,113,113,0.5); }
 
 .battle-ai-toast__icon {
   font-size: 28px;
@@ -2900,7 +3004,7 @@ input {
   line-height: 1;
 }
 
-.battle-ai-toast--ok   .battle-ai-toast__icon { color: #16A34A; }
+.battle-ai-toast--ok   .battle-ai-toast__icon { color: var(--success); }
 .battle-ai-toast--fail .battle-ai-toast__icon { color: var(--danger); }
 
 .battle-ai-toast__body {
