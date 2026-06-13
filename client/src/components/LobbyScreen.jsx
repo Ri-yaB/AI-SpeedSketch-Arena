@@ -16,9 +16,9 @@ const DOODLES = [
 ];
 
 const SOLO_INSTRUCTIONS = [
-  { icon: '🎨', text: 'Pick a word, sketch it fast — 90 seconds on the clock' },
-  { icon: '🤖', text: 'AI judges your drawing — Easy/Medium +2 pts · Hard +4 pts' },
-  { icon: '🚫', text: "Don't write the word — detected and costs 1 pt!" },
+  { num: '01', icon: '🎨', label: 'Pick & Draw', text: 'Choose any word from your pool and sketch it. 90 seconds on the clock — draw as many as you can.' },
+  { num: '02', icon: '🤖', label: 'AI Judges', text: 'The AI analyses your sketch. Easy and Medium words score +2 pts; Hard words score +4 pts.' },
+  { num: '03', icon: '🚫', label: 'No Cheating', text: 'Writing the word on canvas is detected instantly and costs you 1 point. Draw, never spell.' },
 ];
 
 export default function LobbyScreen({ connected, connectionError, onJoinGame, onBack }) {
@@ -95,16 +95,25 @@ export default function LobbyScreen({ connected, connectionError, onJoinGame, on
           </div>
         ) : showInstructions ? (
           <div className="inst-inline">
-            <div className="inst-inline__title">🎮 How to Play — Solo Mode</div>
+            <div className="inst-inline__header">
+              <div className="inst-inline__eyebrow">Solo Mode</div>
+              <div className="inst-inline__title">How to Play</div>
+            </div>
             <div className="inst-inline__steps">
-              {SOLO_INSTRUCTIONS.map((item, i) => (
-                <div key={i} className="inst-inline__step">
-                  <span className="inst-inline__step-icon">{item.icon}</span>
-                  <span className="inst-inline__step-text">{item.text}</span>
+              {SOLO_INSTRUCTIONS.map((item) => (
+                <div key={item.num} className="inst-inline__step">
+                  <div className="inst-inline__step-left">
+                    <div className="inst-inline__step-num">{item.num}</div>
+                    <div className="inst-inline__step-icon">{item.icon}</div>
+                  </div>
+                  <div className="inst-inline__step-body">
+                    <div className="inst-inline__step-label">{item.label}</div>
+                    <div className="inst-inline__step-text">{item.text}</div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="lobby-cta-buttons">
+            <div className="inst-inline__actions">
               <button
                 className="btn btn--primary btn--large"
                 onClick={handleStartGame}

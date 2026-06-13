@@ -4,9 +4,9 @@ import DHSLogo from './DHSLogo.jsx';
 const ADMIN_PASSWORD = 'dhs2026';
 
 const BATTLE_INSTRUCTIONS = [
-  { icon: '⚔️', text: '12 rounds · 10s each · everyone draws the same word' },
-  { icon: '🤖', text: 'Highest AI confidence wins the round — Easy +2 · Hard +4 pts' },
-  { icon: '🚫', text: "Don't write the word — detected and costs 1 pt!" },
+  { num: '01', icon: '⚔️', label: 'Same Word, Same Time', text: '12 rounds of 10 seconds each. All players draw the exact same word simultaneously.' },
+  { num: '02', icon: '🤖', label: 'Best Drawing Wins', text: 'AI judges every sketch. The highest confidence score claims the round. Easy +2 pts, Hard +4 pts.' },
+  { num: '03', icon: '🚫', label: 'No Cheating', text: 'Writing the word on canvas is detected instantly and costs 1 point. Draw, never spell.' },
 ];
 
 export default function BattleLobbyScreen({ onBack, battleState, battleActions, myPlayerId }) {
@@ -151,16 +151,25 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <span className="battle-lobby__mode-tag">⚔️ Battle Mode</span>
           </div>
           <div className="inst-inline">
-            <div className="inst-inline__title">⚔️ How Battle Mode Works</div>
+            <div className="inst-inline__header">
+              <div className="inst-inline__eyebrow inst-inline__eyebrow--battle">Battle Mode</div>
+              <div className="inst-inline__title">How to Play</div>
+            </div>
             <div className="inst-inline__steps">
-              {BATTLE_INSTRUCTIONS.map((item, i) => (
-                <div key={i} className="inst-inline__step">
-                  <span className="inst-inline__step-icon">{item.icon}</span>
-                  <span className="inst-inline__step-text">{item.text}</span>
+              {BATTLE_INSTRUCTIONS.map((item) => (
+                <div key={item.num} className="inst-inline__step">
+                  <div className="inst-inline__step-left">
+                    <div className="inst-inline__step-num">{item.num}</div>
+                    <div className="inst-inline__step-icon">{item.icon}</div>
+                  </div>
+                  <div className="inst-inline__step-body">
+                    <div className="inst-inline__step-label">{item.label}</div>
+                    <div className="inst-inline__step-text">{item.text}</div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="lobby-cta-buttons">
+            <div className="inst-inline__actions">
               <button
                 className="btn btn--primary btn--large"
                 onClick={handleJoinConfirm}

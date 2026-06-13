@@ -3011,48 +3011,125 @@ input {
   color: var(--text-500);
 }
 
-/* Inline instructions (solo & battle pre-game) */
+/* ── Inline instructions card ───────────────────────────────────────────── */
 .inst-inline {
   width: 100%;
   background: var(--surface-0);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+/* Gradient top stripe */
+.inst-inline::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563EB 0%, #4F8EF7 50%, #38BDF8 100%);
+}
+
+.inst-inline__header {
+  padding: 24px 24px 4px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 4px;
 }
+
+.inst-inline__eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+
+.inst-inline__eyebrow--battle { color: var(--danger); }
 
 .inst-inline__title {
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
   color: var(--text-900);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
 }
 
 .inst-inline__steps {
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .inst-inline__step {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background var(--tx-fast);
 }
 
-.inst-inline__step-icon {
-  font-size: 16px;
-  line-height: 1.4;
+.inst-inline__step:last-child { border-bottom: none; }
+
+.inst-inline__step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.inst-inline__step-text {
+.inst-inline__step-num {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--navy);
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+}
+
+.inst-inline__step-icon {
+  font-size: 22px;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  background: rgba(79,142,247,0.08);
+  border: 1px solid rgba(79,142,247,0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.inst-inline__step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 6px;
+}
+
+.inst-inline__step-label {
   font-size: 13px;
-  color: var(--text-700);
-  line-height: 1.5;
+  font-weight: 700;
+  color: var(--text-900);
+  letter-spacing: 0.01em;
+}
+
+.inst-inline__step-text {
+  font-size: 12px;
+  color: var(--text-500);
+  line-height: 1.55;
+}
+
+.inst-inline__actions {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 /* Floating AI toast — hidden on desktop, shown on ≤1024px */
