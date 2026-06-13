@@ -3222,18 +3222,16 @@ input {
 
 @media (max-width: 900px) {
   .game-screen {
-    height: auto;
-    min-height: 100dvh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   .game-main {
     display: flex;
     flex-direction: column;
-    overflow: visible;
-    flex: none;
+    flex: 1;
     min-height: 0;
+    overflow: hidden;
     padding: 6px;
     gap: 6px;
   }
@@ -3267,7 +3265,7 @@ input {
   /* Canvas below word pool */
   .game-panel--center {
     order: 2;
-    min-height: 520px;
+    min-height: 0;
     flex: 1;
   }
 
@@ -3385,8 +3383,7 @@ input {
 
   .app-nav__tab-icon { font-size: 18px; }
 
-  /* Push content above fixed bottom nav */
-  .app-content { padding-bottom: 60px; }
+  /* Push content above fixed bottom nav (only when nav is visible) */
   .app-content--with-nav { padding-bottom: 60px; }
 
   /* Game screen timer/score compact */
@@ -3398,7 +3395,7 @@ input {
   .toolbar-row     { gap: 5px; }
   .tool-btn        { width: 32px; height: 32px; font-size: 15px; }
   .brush-slider    { width: 60px; }
-  .game-panel--center { min-height: 400px; }
+  .game-panel--center { min-height: 0; }
 
   /* Battle lobby form full width */
   .battle-lobby__inner { max-width: 100%; }
@@ -3413,7 +3410,7 @@ input {
 
 @media (max-width: 600px) {
   .brush-slider { width: 52px; }
-  .game-panel--center { min-height: 360px; }
+  .game-panel--center { min-height: 0; }
   .battle-code-card__code { font-size: 48px; }
 
   .blb-search { flex-direction: column; }
