@@ -12,6 +12,7 @@ const BATTLE_INSTRUCTIONS = [
 export default function BattleLobbyScreen({ onBack, battleState, battleActions, myPlayerId }) {
   const { status, roomCode, isHost, players } = battleState;
 
+  // Player join state
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -20,51 +21,40 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
   const [copied, setCopied]     = useState(false);
 
   // Admin state
-  const [isAdmin, setIsAdmin]           = useState(false);
+  const [isAdmin, setIsAdmin]               = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminPass, setAdminPass]       = useState('');
-  const [adminError, setAdminError]     = useState('');
-  const [tab, setTab]                   = useState('join'); // 'join' | 'create'
+  const [adminPass, setAdminPass]           = useState('');
+  const [adminError, setAdminError]         = useState('');
 
-  // Instructions overlay
+  // Instructions overlay (players only)
   const [showInstructions, setShowInstructions] = useState(false);
-  const [pendingAction, setPendingAction]       = useState(null);
 
   const inLobby = status === 'lobby';
 
-  const validateForm = (needCode) => {
-    if (!name.trim()) { setError('Name is required.'); return false; }
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) { setError('Valid email is required.'); return false; }
-    if (needCode && !joinCode.trim()) { setError('Room code is required.'); return false; }
-    return true;
-  };
-
+  // ── Player join ────────────────────────────────────────────────────────────
   const handleJoin = (e) => {
     e.preventDefault();
     setError('');
-    if (!validateForm(true)) return;
-    setPendingAction('join');
+    if (!name.trim()) { setError('Name is required.'); return; }
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) { setError('Valid email is required.'); return; }
+    if (!joinCode.trim()) { setError('Room code is required.'); return; }
     setShowInstructions(true);
   };
 
-  const handleCreate = (e) => {
-    e.preventDefault();
-    setError('');
-    if (!validateForm(false)) return;
-    setPendingAction('create');
-    setShowInstructions(true);
-  };
-
-  const handleContinue = async () => {
+  const handleJoinConfirm = async () => {
     setShowInstructions(false);
     setLoading(true);
-    if (pendingAction === 'create') {
-      const res = await battleActions.createRoom(name.trim(), email.trim());
-      if (!res.success) setError(res.error || 'Could not create room.');
-    } else {
-      const res = await battleActions.joinRoom(joinCode.trim(), name.trim(), email.trim());
-      if (!res.success) setError(res.error || 'Could not join room.');
-    }
+    const res = await battleActions.joinRoom(joinCode.trim(), name.trim(), email.trim());
+    if (!res.success) setError(res.error || 'Could not join room.');
+    setLoading(false);
+  };
+
+  // ── Admin room creation ────────────────────────────────────────────────────
+  const handleAdminCreateRoom = async () => {
+    setError('');
+    setLoading(true);
+    const res = await battleActions.createRoom('Admin', 'admin@dhs2026.com');
+    if (!res.success) setError(res.error || 'Could not create room.');
     setLoading(false);
   };
 
@@ -82,11 +72,11 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // ── Admin password modal ───────────────────────────────────────────────────
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPass === ADMIN_PASSWORD) {
       setIsAdmin(true);
-      setTab('create');
       setShowAdminModal(false);
       setAdminPass('');
       setAdminError('');
@@ -95,7 +85,6 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     }
   };
 
-  // ── Admin password modal ───────────────────────────────────────────────────
   const AdminModal = () => (
     <div className="admin-modal-backdrop" onClick={() => { setShowAdminModal(false); setAdminError(''); }}>
       <div className="admin-modal" onClick={e => e.stopPropagation()}>
@@ -122,7 +111,37 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     </div>
   );
 
-  // ── Instructions overlay ───────────────────────────────────────────────────
+  // ── Admin panel (logged in, no room yet) ───────────────────────────────────
+  if (isAdmin && !inLobby) {
+    return (
+      <div className="battle-lobby">
+        <div className="battle-lobby__inner">
+          <div className="battle-lobby__header">
+            <DHSLogo height={28} />
+            <span className="battle-lobby__mode-tag">🔐 Admin Panel</span>
+            <button className="battle-lobby__back" onClick={onBack}>← Back</button>
+          </div>
+
+          <div className="admin-panel">
+            <div className="admin-panel__title">Create a Battle Room</div>
+            <div className="admin-panel__sub">
+              One click generates a room code you can share with players.
+            </div>
+            {error && <div className="battle-error">{error}</div>}
+            <button
+              className={`btn btn--primary btn--large ${loading ? 'btn--disabled' : ''}`}
+              onClick={handleAdminCreateRoom}
+              disabled={loading}
+            >
+              {loading ? 'Creating…' : '⚔️ Generate Room Code'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Instructions overlay (player join flow) ────────────────────────────────
   if (showInstructions) {
     return (
       <div className="battle-lobby">
@@ -144,10 +163,10 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <div className="lobby-cta-buttons">
               <button
                 className="btn btn--primary btn--large"
-                onClick={handleContinue}
+                onClick={handleJoinConfirm}
                 disabled={loading}
               >
-                {loading ? 'Loading…' : pendingAction === 'create' ? 'Create Room →' : 'Join Room →'}
+                {loading ? 'Joining…' : 'Join Room →'}
               </button>
               <button className="btn btn--ghost" onClick={() => setShowInstructions(false)}>
                 ← Back
@@ -167,7 +186,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
         <div className="battle-lobby__inner">
           <div className="battle-lobby__header">
             <DHSLogo height={28} />
-            <span className="battle-lobby__mode-tag">⚔️ Battle Mode</span>
+            <span className="battle-lobby__mode-tag">{isAdmin ? '🔐 Admin Panel' : '⚔️ Battle Mode'}</span>
             <button className="battle-lobby__back" onClick={onBack}>← Back</button>
           </div>
 
@@ -184,7 +203,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <div className="battle-players-card__title">
               Players ({players.length}/8)
               {players.length < 2 && (
-                <span className="battle-players-card__waiting"> — Waiting for more players…</span>
+                <span className="battle-players-card__waiting"> — Waiting for players…</span>
               )}
             </div>
             <div className="battle-players-card__list">
@@ -226,7 +245,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     );
   }
 
-  // ── Pre-join form ──────────────────────────────────────────────────────────
+  // ── Player join form ───────────────────────────────────────────────────────
   return (
     <div className="battle-lobby">
       {showAdminModal && <AdminModal />}
@@ -238,21 +257,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
           <button className="battle-lobby__back" onClick={onBack}>← Back</button>
         </div>
 
-        {/* Tabs — admin sees both, users see only Join */}
-        {isAdmin && (
-          <div className="battle-tabs">
-            <button
-              className={`battle-tab ${tab === 'join' ? 'battle-tab--active' : ''}`}
-              onClick={() => { setTab('join'); setError(''); }}
-            >Join Room</button>
-            <button
-              className={`battle-tab ${tab === 'create' ? 'battle-tab--active' : ''}`}
-              onClick={() => { setTab('create'); setError(''); }}
-            >Create Room</button>
-          </div>
-        )}
-
-        <form className="battle-form" onSubmit={tab === 'create' ? handleCreate : handleJoin}>
+        <form className="battle-form" onSubmit={handleJoin}>
           <div className="form-group">
             <label className="form-label">Your Name</label>
             <input
@@ -274,39 +279,34 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
               onChange={e => setEmail(e.target.value)}
             />
           </div>
-          {tab === 'join' && (
-            <div className="form-group">
-              <label className="form-label">Room Code</label>
-              <input
-                className="form-input form-input--code"
-                type="text"
-                placeholder="e.g. 42"
-                value={joinCode}
-                onChange={e => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                maxLength={2}
-                inputMode="numeric"
-              />
-            </div>
-          )}
+          <div className="form-group">
+            <label className="form-label">Room Code</label>
+            <input
+              className="form-input form-input--code"
+              type="text"
+              placeholder="e.g. 42"
+              value={joinCode}
+              onChange={e => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 2))}
+              maxLength={2}
+              inputMode="numeric"
+            />
+          </div>
           {error && <div className="battle-error">{error}</div>}
           <button
             type="submit"
             className={`btn btn--primary btn--large ${loading ? 'btn--disabled' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Loading…' : tab === 'create' ? 'Create Room →' : 'Join Room →'}
+            {loading ? 'Joining…' : 'Join Room →'}
           </button>
         </form>
 
-        {/* Subtle admin link */}
-        {!isAdmin && (
-          <button
-            className="admin-unlock-btn"
-            onClick={() => setShowAdminModal(true)}
-          >
-            🔐 Admin
-          </button>
-        )}
+        <button
+          className="admin-unlock-btn"
+          onClick={() => setShowAdminModal(true)}
+        >
+          🔐 Admin
+        </button>
       </div>
     </div>
   );
