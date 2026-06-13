@@ -93,6 +93,11 @@ export default function LobbyScreen({ connected, connectionError, onJoinGame, on
               ? `Cannot connect to server: ${connectionError}`
               : 'Connecting to server...'}
           </div>
+        ) : loading ? (
+          <div className="lobby-loading">
+            <div className="lobby-loading__spinner" />
+            <div className="lobby-loading__text">Getting your canvas ready…</div>
+          </div>
         ) : showInstructions ? (
           <div className="inst-inline">
             <div className="inst-inline__header">
