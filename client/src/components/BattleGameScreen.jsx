@@ -14,8 +14,10 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
 
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [toasts, setToasts] = useState([]);
+  const [aiToastVisible, setAiToastVisible] = useState(false);
   const toastIdRef = useRef(0);
   const prevResultRef = useRef(null);
+  const aiToastTimerRef = useRef(null);
 
   const isPanic  = timeRemaining <= 10 && timeRemaining > 0;
   const isUrgent = timeRemaining <= 15;
@@ -26,6 +28,15 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  // Show AI result toast for 3 seconds on each new result
+  useEffect(() => {
+    if (!myResults[0]) return;
+    setAiToastVisible(true);
+    clearTimeout(aiToastTimerRef.current);
+    aiToastTimerRef.current = setTimeout(() => setAiToastVisible(false), 3000);
+    return () => clearTimeout(aiToastTimerRef.current);
+  }, [myResults[0]?.id]); // eslint-disable-line
 
   // Toast new word-winners
   useEffect(() => {
@@ -72,8 +83,8 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
         ))}
       </div>
 
-      {/* AI result toast — always visible (floats over canvas on iPad) */}
-      {myResults[0] && (
+      {/* AI result toast — visible for 3s then auto-dismisses */}
+      {aiToastVisible && myResults[0] && (
         <div className={`battle-ai-toast ${myResults[0].correct ? 'battle-ai-toast--ok' : 'battle-ai-toast--fail'}`}>
           <span className="battle-ai-toast__icon">{myResults[0].correct ? '✓' : '✗'}</span>
           <div className="battle-ai-toast__body">
