@@ -19,13 +19,13 @@
   --text-500:  #94A3B8;
   --text-400:  #4B5E7A;
 
-  /* Surfaces — dark */
-  --surface-0: #1E2640;
-  --surface-1: #131929;
-  --surface-2: #0B0F1A;
+  /* Surfaces — true black */
+  --surface-0: #1A1A1A;
+  --surface-1: #0D0D0D;
+  --surface-2: #050505;
 
   /* Borders */
-  --border:    rgba(255,255,255,0.09);
+  --border:    rgba(255,255,255,0.10);
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #2563EB 0%, #4F8EF7 100%);
@@ -187,8 +187,8 @@ input {
   flex: 1;
   height: 100%;
   background:
-    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(79,142,247,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 15% 15%, rgba(79,142,247,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(56,189,248,0.05) 0%, transparent 55%),
     var(--surface-1);
   overflow: auto;
   padding: 40px 24px 24px;
@@ -206,7 +206,7 @@ input {
 
 .lobby-doodle {
   position: absolute;
-  opacity: 0.25;
+  opacity: 0.45;
   animation: doodle-float ease-in-out infinite;
   user-select: none;
 }
@@ -214,11 +214,11 @@ input {
 .lobby-doodle svg { width: 100%; height: 100%; }
 
 @keyframes doodle-float {
-  0%   { transform: translateY(0px)   scale(1);    opacity: 0.20; }
-  30%  { transform: translateY(-14px) scale(1.06); opacity: 0.30; }
-  60%  { transform: translateY(-8px)  scale(0.97); opacity: 0.25; }
-  80%  { transform: translateY(-18px) scale(1.03); opacity: 0.28; }
-  100% { transform: translateY(0px)   scale(1);    opacity: 0.20; }
+  0%   { transform: translateY(0px)   scale(1);    opacity: 0.40; }
+  30%  { transform: translateY(-14px) scale(1.06); opacity: 0.55; }
+  60%  { transform: translateY(-8px)  scale(0.97); opacity: 0.45; }
+  80%  { transform: translateY(-18px) scale(1.03); opacity: 0.50; }
+  100% { transform: translateY(0px)   scale(1);    opacity: 0.40; }
 }
 
 .lobby-screen__inner {
@@ -2348,8 +2348,8 @@ input {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse 80% 60% at 30% -10%, rgba(79,142,247,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 30% -5%, rgba(79,142,247,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 80% 100%, rgba(56,189,248,0.05) 0%, transparent 55%),
     var(--surface-1);
   overflow: auto;
   position: relative;
@@ -2719,6 +2719,54 @@ input {
   font-style: italic;
   animation: pulse-opacity 2s ease-in-out infinite;
   padding: 8px;
+}
+
+/* Admin unlock button — subtle, bottom of join form */
+.admin-unlock-btn {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-400);
+  opacity: 0.5;
+  letter-spacing: 0.04em;
+  transition: opacity var(--tx-fast);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.admin-unlock-btn:hover { opacity: 1; }
+
+/* Admin password modal */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.admin-modal {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+}
+
+.admin-modal__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-900);
+  letter-spacing: 0.02em;
 }
 
 .battle-rules {
