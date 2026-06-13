@@ -2852,7 +2852,9 @@ input {
 
 .battle-game-screen { /* inherits from .game-screen */ }
 
-.battle-game-main { /* inherits from .game-main */ }
+.battle-game-main {
+  grid-template-columns: 1fr 240px;
+}
 
 .topbar-brand-ai {
   background: var(--gradient-primary);
@@ -3456,6 +3458,9 @@ input {
     gap: 5px;
     padding: 5px;
   }
+  .battle-game-main {
+    grid-template-columns: 1fr 200px;
+  }
 
   .game-brand { display: none; }
   .game-topbar__divider { display: none; }
@@ -3474,8 +3479,12 @@ input {
     gap: 6px;
     padding: 6px;
   }
+  .battle-game-main {
+    grid-template-columns: 1fr 180px;
+  }
 
   .game-panel--right { display: none; }
+  .battle-game-main .game-panel--right { display: flex; }
   .topbar-dhs-logo   { display: flex; }
 
   .ai-feedback-stack { right: 8px; bottom: 8px; max-width: 260px; width: 260px; }
@@ -3551,6 +3560,12 @@ input {
   }
 
   .game-panel--right { display: none; }
+  .battle-game-main .game-panel--right { display: none; }
+
+  .battle-game-main {
+    display: flex;
+    flex-direction: column;
+  }
 
   .battle-word-grid {
     flex-direction: row !important;
