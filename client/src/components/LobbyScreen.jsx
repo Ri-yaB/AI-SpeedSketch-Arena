@@ -16,7 +16,7 @@ const DOODLES = [
 ];
 
 const SOLO_INSTRUCTIONS = [
-  { num: '01', icon: '🎨', label: 'Pick & Draw', text: 'Choose any word from your pool and sketch it. 90 seconds on the clock — draw as many as you can.' },
+  { num: '01', icon: '🎨', label: 'Pick & Draw', text: 'Choose any word from your pool and sketch it. 90 seconds on the clock. Draw as many as you can.' },
   { num: '02', icon: '🤖', label: 'AI Judges', text: 'The AI analyses your sketch. Easy and Medium words score +2 pts; Hard words score +4 pts.' },
   { num: '03', icon: '🚫', label: 'No Cheating', text: 'Writing the word on canvas is detected instantly and costs you 1 point. Draw, never spell.' },
 ];
@@ -84,7 +84,6 @@ export default function LobbyScreen({ connected, connectionError, onJoinGame, on
           <p className="lobby-subtitle">
             Draw fast. Beat the AI. Score big. 90 seconds on the clock.
           </p>
-          <div className="lobby-conf-tag">DataHack Summit 2026</div>
         </div>
 
         {(!connected || connectionError) ? (
