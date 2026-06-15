@@ -53,7 +53,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
   const handleAdminCreateRoom = async () => {
     setError('');
     setLoading(true);
-    const res = await battleActions.createRoom('Admin', 'admin@dhs2026.com');
+    const res = await battleActions.createRoom('Admin', 'admin@dhs2026.com', true);
     if (!res.success) setError(res.error || 'Could not create room.');
     setLoading(false);
   };
@@ -222,7 +222,6 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
                   <span className="battle-player-row__name">
                     {p.name}
                     {p.id === myPlayerId && <span className="battle-player-row__you"> (you)</span>}
-                    {p.id === players[0]?.id && <span className="battle-player-row__host"> 👑 Host</span>}
                   </span>
                 </div>
               ))}

@@ -142,9 +142,9 @@ export function useBattleState(socketRef, myPlayerId) {
     };
   }, [socketRef]);
 
-  const createRoom = useCallback((name, email) => {
+  const createRoom = useCallback((name, email, isAdminHost = false) => {
     return new Promise((resolve) => {
-      socketRef.current?.emit('battle-create', { playerName: name, playerEmail: email }, (res) => {
+      socketRef.current?.emit('battle-create', { playerName: name, playerEmail: email, isAdminHost }, (res) => {
         if (res.success) {
           setState(prev => ({
             ...prev,

@@ -160,13 +160,13 @@ io.on('connection', (socket) => {
   // battle-create: Host creates a new battle room
   // Payload: { playerName, playerEmail }
   // ----------------------------------------------------------------
-  socket.on('battle-create', ({ playerName, playerEmail }, callback) => {
+  socket.on('battle-create', ({ playerName, playerEmail, isAdminHost }, callback) => {
     try {
       const name  = playerName?.trim().slice(0, 30);
       const email = (playerEmail || '').trim().slice(0, 100);
       if (!name) return callback?.({ success: false, error: 'Name is required.' });
 
-      const code = createRoom(socket.id, name, email);
+      const code = createRoom(socket.id, name, email, !!isAdminHost);
       socket.join(code);
       console.log(`[Battle] Created room ${code} by ${name}`);
       callback?.({ success: true, code, snapshot: getRoomSnapshot(code) });

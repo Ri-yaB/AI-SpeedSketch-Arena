@@ -7,9 +7,10 @@ const rooms = new Map();
 // roomCode → finished battle result (persists after room cleanup, max 100 entries)
 const battleHistory = new Map();
 
-const ROUND_SECONDS  = 10;
-const TOTAL_WORDS    = 12;   // 4E + 4M + 4H
-const ROUND_PAUSE_MS = 2500; // brief pause between rounds to show result
+const ROUND_SECONDS          = 10;
+const TOTAL_WORDS            = 12;   // 4E + 4M + 4H
+const ROUND_PAUSE_MS         = 2500; // brief pause between rounds to show result
+const BATTLE_WIN_THRESHOLD   = 0.75; // minimum confidence to be eligible to win a round
 
 function generateCode() {
   let code;
@@ -72,10 +73,11 @@ export function getRoomSnapshot(code) {
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
-export function createRoom(socketId, name, email) {
+export function createRoom(socketId, name, email, isAdminHost = false) {
   const code = generateCode();
   const room = {
     code, hostId: socketId,
+    isAdminHost,
     status: 'waiting',
     players: new Map(),
     wordPool: [], wordDifficulty: {},
@@ -86,7 +88,10 @@ export function createRoom(socketId, name, email) {
     submissions: {},
     wordWinners: {},
   };
-  room.players.set(socketId, { id: socketId, name, email, score: 0, submittedWords: [] });
+  // Admin host is not a player — only real participants join as players
+  if (!isAdminHost) {
+    room.players.set(socketId, { id: socketId, name, email, score: 0, submittedWords: [] });
+  }
   rooms.set(code, room);
   return code;
 }
@@ -264,11 +269,27 @@ function resolveWord(code, word, io) {
     return;
   }
 
+  // Only consider submissions that meet the minimum confidence threshold
+  const eligibleSubs = Object.entries(subs).filter(([, s]) => s.confidence >= BATTLE_WIN_THRESHOLD);
+
+  if (eligibleSubs.length === 0) {
+    room.wordWinners[word] = null;
+    io.to(code).emit('battle-word-winner', {
+      word,
+      winnerId: null,
+      winnerName: null,
+      isTie: false,
+      topConfidence: 0,
+      players: buildPlayerSnapshot(room),
+    });
+    return;
+  }
+
   let topConfidence = -1;
   let winner = null;
   let tie = false;
 
-  for (const [pid, s] of Object.entries(subs)) {
+  for (const [pid, s] of eligibleSubs) {
     if (s.confidence > topConfidence) {
       topConfidence = s.confidence;
       winner = pid;
@@ -348,6 +369,12 @@ export function endBattleGame(code, io) {
 
 export function removePlayerFromRoom(socketId, io) {
   for (const [code, room] of rooms.entries()) {
+    // Admin host disconnect — clean up room if still waiting
+    if (room.isAdminHost && room.hostId === socketId && !room.players.has(socketId)) {
+      if (room.roundTimer) clearInterval(room.roundTimer);
+      if (room.status === 'waiting') rooms.delete(code);
+      return;
+    }
     if (!room.players.has(socketId)) continue;
     room.players.delete(socketId);
 
