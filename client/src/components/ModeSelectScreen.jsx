@@ -1,6 +1,4 @@
 import React from 'react';
-import DHSLogo from './DHSLogo.jsx';
-import AVLogo from './AVLogo.jsx';
 
 // anim: 'float' | 'drift' | 'spin' | 'pulse'
 const DOODLES = [
@@ -47,11 +45,6 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
 
       <div className="mode-select__inner">
         <div className="mode-select__header">
-          <div className="mode-select__logos">
-            <DHSLogo height={30} />
-            <div className="mode-select__logo-divider" />
-            <AVLogo height={30} />
-          </div>
           <h1 className="lobby-title">
             <span className="lobby-title__ai">AI</span>{' '}
             <span className="lobby-title__speed">SpeedSketch</span>{' '}

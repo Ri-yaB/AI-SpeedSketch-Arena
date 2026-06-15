@@ -12,6 +12,7 @@ import BattleResultsScreen from './BattleResultsScreen.jsx';
 import LeaderboardPage from './LeaderboardPage.jsx';
 import BattleLeaderboardPage from './BattleLeaderboardPage.jsx';
 import DHSLogo from './DHSLogo.jsx';
+import AVLogo from './AVLogo.jsx';
 import DHSOrb from './DHSOrb.jsx';
 
 const NAV_TABS = [
@@ -144,6 +145,8 @@ export default function App() {
         <nav className="app-nav">
           <div className="app-nav__logo">
             <DHSLogo height={26} />
+            <div className="app-nav__logo-divider" />
+            <AVLogo height={26} />
           </div>
           <div className="app-nav__tabs">
             {NAV_TABS.map(tab => (
