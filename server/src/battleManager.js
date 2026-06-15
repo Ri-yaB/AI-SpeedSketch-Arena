@@ -88,7 +88,7 @@ export function createRoom(socketId, name, email, isAdminHost = false) {
     wordPool: [], wordDifficulty: {},
     wordPairs: [],
     currentRound: -1,
-    roundTimeRemaining: ROUND_SECONDS,
+    roundTimeRemaining: EASY_SECONDS,
     roundTimer: null,
     submissions: {},
     wordWinners: {},
