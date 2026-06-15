@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import DHSLogo from './DHSLogo.jsx';
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 
@@ -23,7 +22,6 @@ export default function LeaderboardPage({ socketRef }) {
   return (
     <div className="lb-page">
       <div className="lb-page__header">
-        <DHSLogo height={32} />
         <div className="lb-page__title">Leaderboard</div>
       </div>
 
