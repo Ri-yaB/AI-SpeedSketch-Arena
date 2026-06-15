@@ -22,6 +22,7 @@ import {
   getPlayerRoom,
   getRoomSnapshot,
   getBattleResult,
+  getAllBattleResults,
 } from './battleManager.js';
 
 const PORT = process.env.PORT || 3001;
@@ -228,6 +229,10 @@ io.on('connection', (socket) => {
     const result = getBattleResult(code);
     if (!result) return callback?.({ success: false, error: 'No results found for this room code.' });
     callback?.({ success: true, result });
+  });
+
+  socket.on('get-all-battle-results', (_, callback) => {
+    callback?.({ success: true, results: getAllBattleResults() });
   });
 
   // ----------------------------------------------------------------

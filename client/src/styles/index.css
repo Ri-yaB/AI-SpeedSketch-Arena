@@ -3460,17 +3460,70 @@ input {
 
 .blb-result__code {
   font-family: var(--font-display);
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   color: var(--navy);
-  padding: 6px 20px;
-  border-radius: 10px;
-  border: 2px solid rgba(26,58,140,0.15);
-  background: rgba(26,58,140,0.04);
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(79,142,247,0.25);
+  background: rgba(79,142,247,0.08);
 }
 
 .blb-result__time { font-size: 13px; color: var(--text-400); }
+
+/* Rankings table */
+.blb-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.blb-empty {
+  text-align: center;
+  color: var(--text-500);
+  padding: 48px 20px;
+  font-size: 15px;
+}
+
+.blb-rankings {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.blb-rankings__head {
+  display: grid;
+  grid-template-columns: 56px 1fr 80px 100px;
+  padding: 10px 16px;
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-400);
+}
+
+.blb-rankings__row {
+  display: grid;
+  grid-template-columns: 56px 1fr 80px 100px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+  transition: background var(--tx-fast);
+}
+
+.blb-rankings__row:hover { background: rgba(255,255,255,0.03); }
+
+.blb-rankings__row--top1 { background: rgba(251,191,36,0.07); }
+.blb-rankings__row--top2 { background: rgba(156,163,175,0.06); }
+.blb-rankings__row--top3 { background: rgba(180,113,63,0.06); }
+
+.blb-rankings__col-rank { font-size: 18px; }
+.blb-rankings__col-name { font-weight: 600; color: var(--text-900); font-size: 14px; }
+.blb-rankings__col-score { font-weight: 700; color: var(--navy); font-size: 14px; }
+.blb-rankings__col-rounds { font-size: 13px; color: var(--text-500); }
 
 /* ============================================================
    DHS WAITING / ORB SCREEN

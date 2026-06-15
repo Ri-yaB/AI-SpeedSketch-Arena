@@ -385,3 +385,7 @@ export function getPlayerRoom(socketId) {
 export function getBattleResult(code) {
   return battleHistory.get((code || '').trim()) || null;
 }
+
+export function getAllBattleResults() {
+  return Array.from(battleHistory.values()).sort((a, b) => b.endedAt - a.endedAt);
+}
