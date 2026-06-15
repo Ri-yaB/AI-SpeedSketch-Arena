@@ -2521,7 +2521,37 @@ input {
   text-transform: uppercase;
 }
 
-.mode-card__icon { font-size: 40px; line-height: 1; }
+.mode-card__icon {
+  font-size: 36px;
+  line-height: 1;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 1.5px solid rgba(79,142,247,0.35);
+  background: radial-gradient(circle at 40% 40%, rgba(79,142,247,0.18) 0%, rgba(79,142,247,0.04) 70%);
+  box-shadow: 0 0 18px rgba(79,142,247,0.15), inset 0 1px 0 rgba(255,255,255,0.07);
+  backdrop-filter: blur(4px);
+  transition: box-shadow var(--tx-med), border-color var(--tx-med);
+}
+
+.mode-card--battle .mode-card__icon {
+  border-color: rgba(248,113,113,0.35);
+  background: radial-gradient(circle at 40% 40%, rgba(248,113,113,0.18) 0%, rgba(248,113,113,0.04) 70%);
+  box-shadow: 0 0 18px rgba(248,113,113,0.15), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.mode-card:hover .mode-card__icon {
+  box-shadow: 0 0 28px rgba(79,142,247,0.30), inset 0 1px 0 rgba(255,255,255,0.10);
+  border-color: rgba(79,142,247,0.6);
+}
+
+.mode-card--battle:hover .mode-card__icon {
+  box-shadow: 0 0 28px rgba(248,113,113,0.28), inset 0 1px 0 rgba(255,255,255,0.10);
+  border-color: rgba(248,113,113,0.6);
+}
 
 .mode-card__name {
   font-family: var(--font-display);
@@ -3664,7 +3694,7 @@ input {
   .mode-select__inner { padding: 32px 16px 28px; gap: 20px; }
   .mode-select__cards { flex-direction: column; align-items: center; }
   .mode-card { min-width: 0; width: 100%; max-width: 460px; padding: 22px 18px; }
-  .mode-card__icon { font-size: 32px; }
+  .mode-card__icon { font-size: 28px; width: 56px; height: 56px; }
   .mode-card__name { font-size: 18px; }
 
   .battle-lobby { padding: 20px 16px; }
