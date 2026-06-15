@@ -58,7 +58,7 @@ export default function BattleResultsScreen({ battleState, myPlayerId, onPlayAga
             {wordPool.map(word => {
               const winner = finalWordWinners[word];
               const diff   = wordDifficulty[word];
-              const pts    = diff === 'hard' ? 4 : 2;
+              const pts    = diff === 'hard' ? 4 : diff === 'medium' ? 3 : 2;
               const subs   = finalSubmissions[word] || {};
               const winnerPlayer = finalPlayers.find(p => p.id === winner);
               const iWon   = winner === myPlayerId;

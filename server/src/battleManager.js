@@ -26,10 +26,10 @@ function generateCode() {
 
 function pickBattleWords() {
   const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
-  const easy   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'easy')).slice(0, 4);
+  const easy   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'easy')).slice(0, 6);
   const medium = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'medium')).slice(0, 4);
-  const hard   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'hard')).slice(0, 4);
-  return [...easy, ...medium, ...hard]; // 12 [word, difficulty] pairs
+  const hard   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'hard')).slice(0, 2);
+  return [...easy, ...medium, ...hard]; // 12 [word, difficulty] pairs: 6E + 4M + 2H
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -229,7 +229,7 @@ export async function submitBattleDrawing(code, socketId, word, imageData, textP
   try {
     const result = await analyzeDrawing(imageData, word);
     const difficulty = room.wordDifficulty[word] || 'easy';
-    const pts = difficulty === 'hard' ? 4 : 2;
+    const pts = difficulty === 'hard' ? 4 : difficulty === 'medium' ? 3 : 2;
 
     if (!room.submissions[word]) room.submissions[word] = {};
     room.submissions[word][socketId] = {

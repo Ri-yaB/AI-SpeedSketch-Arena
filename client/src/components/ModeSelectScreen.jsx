@@ -75,11 +75,11 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
             <div className="mode-card__icon">⚔️</div>
             <div className="mode-card__name">Battle Mode</div>
             <div className="mode-card__desc">
-              Create a private room or join a friend's. Everyone draws the same word. 12 rounds, 10 seconds each. Best AI confidence wins the round!
+              Create a private room or join a friend's. Everyone draws the same word. 12 rounds, 10 to 15 seconds each. Best AI confidence wins the round!
             </div>
             <div className="mode-card__pills">
               <span className="mode-pill">12 Rounds</span>
-              <span className="mode-pill">10s Per Word</span>
+              <span className="mode-pill">6E / 4M / 2H</span>
               <span className="mode-pill">Best Drawing Wins</span>
             </div>
             <div className="mode-card__cta">Start Battle →</div>
