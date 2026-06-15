@@ -175,6 +175,12 @@ function resolveAndAdvance(code, roundIdx, io) {
   const word = room.wordPairs[roundIdx]?.word;
   if (!word) return;
 
+  // Guard: if this round was already resolved (race between timer + early-submit), bail out
+  if (room.wordWinners[word] !== undefined) return;
+
+  // Clear any lingering timer just in case
+  if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
+
   resolveWord(code, word, io);
 
   setTimeout(() => {
@@ -243,7 +249,6 @@ export async function submitBattleDrawing(code, socketId, word, imageData, textP
 
     // All players submitted → end round early
     if (Object.keys(room.submissions[word]).length >= room.players.size) {
-      if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
       resolveAndAdvance(code, room.currentRound, io);
     }
   } catch (err) {

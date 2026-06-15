@@ -18,8 +18,8 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
   const toastIdRef = useRef(0);
   const aiToastTimerRef = useRef(null);
 
-  const isPanic  = roundTimeRemaining <= 3 && roundTimeRemaining > 0;
-  const isUrgent = roundTimeRemaining <= 5;
+  const isPanic  = roundTimeRemaining <= 3 && roundTimeRemaining > 0 && !!currentWord;
+  const isUrgent = roundTimeRemaining <= 5 && roundTimeRemaining > 0 && !!currentWord;
 
   const myScore  = players.find(p => p.id === myPlayerId)?.score ?? 0;
   const myRank   = [...players].sort((a,b) => b.score - a.score).findIndex(p => p.id === myPlayerId) + 1;
@@ -150,7 +150,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
             key={currentRound}
             selectedWord={currentWord}
             onSubmit={handleSubmit}
-            disabled={roundTimeRemaining <= 0 || hasSubmitted}
+            disabled={!currentWord || roundTimeRemaining <= 0 || hasSubmitted}
             hintsRemaining={0}
             hintWord={null}
             onUseHint={() => {}}
