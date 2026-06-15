@@ -7,10 +7,15 @@ const rooms = new Map();
 // roomCode → finished battle result (persists after room cleanup, max 100 entries)
 const battleHistory = new Map();
 
-const ROUND_SECONDS          = 10;
+const EASY_SECONDS           = 10;
+const MED_HARD_SECONDS       = 15;
 const TOTAL_WORDS            = 12;   // 4E + 4M + 4H
-const ROUND_PAUSE_MS         = 2500; // brief pause between rounds to show result
+const ROUND_PAUSE_MS         = 4000; // pause between rounds — gives AI result time to arrive
 const BATTLE_WIN_THRESHOLD   = 0.75; // minimum confidence to be eligible to win a round
+
+function getRoundSeconds(difficulty) {
+  return difficulty === 'easy' ? EASY_SECONDS : MED_HARD_SECONDS;
+}
 
 function generateCode() {
   let code;
@@ -142,15 +147,17 @@ function startRound(code, roundIdx, io) {
   }
 
   const { word, difficulty } = room.wordPairs[roundIdx];
+  const roundSeconds = getRoundSeconds(difficulty);
   room.currentRound       = roundIdx;
-  room.roundTimeRemaining = ROUND_SECONDS;
+  room.roundTimeRemaining = roundSeconds;
 
   io.to(code).emit('battle-round-start', {
     round: roundIdx + 1,
     totalRounds: room.wordPairs.length,
     word,
     difficulty,
-    timeRemaining: ROUND_SECONDS,
+    timeRemaining: roundSeconds,
+    timeTotal: roundSeconds,
     players: buildPlayerSnapshot(room),
   });
 

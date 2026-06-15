@@ -3302,21 +3302,24 @@ input {
   z-index: 1;
 }
 
-/* Floating AI toast — hidden on desktop, shown on ≤1024px */
+/* AI result toast — always visible, positioned bottom-left of canvas area */
 .battle-ai-toast {
   position: fixed;
-  bottom: 90px;
-  right: 20px;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 120;
+  display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 22px;
+  padding: 16px 22px;
   border-radius: 16px;
-  max-width: 340px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 420px;
+  width: max-content;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
   animation: toast-slide-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-  display: none;
   border-width: 2px;
+  backdrop-filter: blur(12px);
 }
 
 .battle-ai-toast--ok   { background: rgba(52,211,153,0.12); border: 2px solid rgba(52,211,153,0.5); }
@@ -3697,11 +3700,9 @@ input {
   .inst-mode-tabs { padding: 0 20px; }
   .lb-page__header, .lb-page__body { padding-left: 20px; padding-right: 20px; }
 
-  /* Show battle AI float toast on tablet */
   .battle-ai-toast {
-    display: flex;
-    bottom: 80px;
-    right: 16px;
+    bottom: 16px;
+    max-width: 90vw;
   }
 }
 

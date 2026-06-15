@@ -13,6 +13,7 @@ const INITIAL = {
   currentWord: null,
   currentDiff: null,
   roundTimeRemaining: 10,
+  currentRoundTotal: 10,
   // per-player results this round
   mySubmittedWords: [],
   myResults: [],
@@ -60,7 +61,7 @@ export function useBattleState(socketRef, myPlayerId) {
       }));
     };
 
-    const onRoundStart = ({ round, totalRounds, word, difficulty, timeRemaining, players }) => {
+    const onRoundStart = ({ round, totalRounds, word, difficulty, timeRemaining, timeTotal, players }) => {
       setState(prev => ({
         ...prev,
         status: 'playing',
@@ -69,6 +70,7 @@ export function useBattleState(socketRef, myPlayerId) {
         currentWord: word,
         currentDiff: difficulty,
         roundTimeRemaining: timeRemaining,
+        currentRoundTotal: timeTotal || timeRemaining,
         players,
       }));
     };

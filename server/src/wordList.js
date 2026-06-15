@@ -28,9 +28,9 @@ export const WORD_LIST_WITH_DIFFICULTY = [
   ['scorpion', 'hard'], ['peacock', 'hard'], ['dragon', 'hard'], ['mermaid', 'hard'],
   ['astronaut', 'hard'], ['volcano', 'hard'], ['tornado', 'hard'], ['lighthouse', 'hard'],
   ['submarine', 'hard'], ['dinosaur', 'hard'], ['wizard', 'hard'], ['snowman', 'hard'],
-  ['saxophone', 'hard'], ['telescope', 'hard'], ['microscope', 'hard'], ['parachute', 'hard'],
-  ['caterpillar', 'hard'], ['windmill', 'hard'], ['fountain', 'hard'], ['spaceship', 'hard'],
-  ['pirate ship', 'hard'],
+  ['shark', 'hard'], ['telescope', 'hard'], ['crab', 'hard'], ['parachute', 'hard'],
+  ['wolf', 'hard'], ['windmill', 'hard'], ['fountain', 'hard'], ['spaceship', 'hard'],
+  ['sword', 'hard'],
 ];
 
 // Sorted: easy first, then medium, then hard

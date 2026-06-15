@@ -8,7 +8,7 @@ const RANK_ICONS = ['🥇', '🥈', '🥉'];
 export default function BattleGameScreen({ battleState, myPlayerId, battleActions }) {
   const {
     players, currentRound, totalRounds, currentWord, currentDiff,
-    roundTimeRemaining, mySubmittedWords, myResults,
+    roundTimeRemaining, currentRoundTotal, mySubmittedWords, myResults,
     submissionStatus, wordWinners,
   } = battleState;
 
@@ -27,7 +27,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
 
   const hasSubmitted = currentWord && mySubmittedWords.includes(currentWord);
   const roundStatus  = currentWord && submissionStatus[currentWord];
-  const timerPct     = (roundTimeRemaining / 10) * 100;
+  const timerPct     = (roundTimeRemaining / (currentRoundTotal || 10)) * 100;
 
   // Auto-dismiss AI toast after 3s
   useEffect(() => {
