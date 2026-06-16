@@ -1,6 +1,6 @@
 // Each entry: [word, difficulty]
 export const WORD_LIST_WITH_DIFFICULTY = [
-  // ── EASY (40 words) ──────────────────────────────────────────────
+  // ── EASY (44 words) — simple silhouettes, 2-4 strokes ───────────
   ['cat', 'easy'], ['dog', 'easy'], ['fish', 'easy'], ['bird', 'easy'],
   ['pig', 'easy'], ['cow', 'easy'], ['frog', 'easy'], ['duck', 'easy'],
   ['sun', 'easy'], ['moon', 'easy'], ['star', 'easy'], ['cloud', 'easy'],
@@ -11,26 +11,29 @@ export const WORD_LIST_WITH_DIFFICULTY = [
   ['bus', 'easy'], ['boat', 'easy'], ['apple', 'easy'], ['banana', 'easy'],
   ['egg', 'easy'], ['eye', 'easy'], ['hand', 'easy'], ['heart', 'easy'],
   ['flag', 'easy'], ['bell', 'easy'], ['key', 'easy'], ['box', 'easy'],
+  ['snake', 'easy'], ['ghost', 'easy'], ['cookie', 'easy'], ['rabbit', 'easy'],
 
-  // ── MEDIUM (35 words) ────────────────────────────────────────────
-  ['elephant', 'medium'], ['penguin', 'medium'], ['rabbit', 'medium'], ['lion', 'medium'],
-  ['bear', 'medium'], ['horse', 'medium'], ['turtle', 'medium'], ['snake', 'medium'],
-  ['pizza', 'medium'], ['cake', 'medium'], ['donut', 'medium'], ['hamburger', 'medium'],
-  ['ice cream', 'medium'], ['cookie', 'medium'], ['sandwich', 'medium'], ['popcorn', 'medium'],
-  ['bicycle', 'medium'], ['airplane', 'medium'], ['rocket', 'medium'], ['umbrella', 'medium'],
-  ['guitar', 'medium'], ['clock', 'medium'], ['crown', 'medium'], ['ghost', 'medium'],
-  ['robot', 'medium'], ['rainbow', 'medium'], ['mountain', 'medium'], ['mushroom', 'medium'],
-  ['cactus', 'medium'], ['diamond', 'medium'], ['trophy', 'medium'], ['castle', 'medium'],
-  ['anchor', 'medium'], ['camera', 'medium'], ['ladder', 'medium'],
+  // ── MEDIUM (28 words) — recognisable objects, some detail ───────
+  ['lion', 'medium'], ['bear', 'medium'], ['turtle', 'medium'],
+  ['pizza', 'medium'], ['cake', 'medium'], ['donut', 'medium'],
+  ['ice cream', 'medium'], ['sandwich', 'medium'], ['popcorn', 'medium'],
+  ['guitar', 'medium'], ['clock', 'medium'], ['crown', 'medium'],
+  ['robot', 'medium'], ['rainbow', 'medium'], ['mountain', 'medium'],
+  ['mushroom', 'medium'], ['cactus', 'medium'], ['diamond', 'medium'],
+  ['trophy', 'medium'], ['castle', 'medium'], ['anchor', 'medium'],
+  ['camera', 'medium'], ['ladder', 'medium'], ['umbrella', 'medium'],
+  ['rocket', 'medium'], ['snowman', 'medium'], ['fire', 'medium'],
+  ['kite', 'medium'],
 
-  // ── HARD (25 words) ──────────────────────────────────────────────
-  ['octopus', 'hard'], ['butterfly', 'hard'], ['giraffe', 'hard'], ['crocodile', 'hard'],
-  ['scorpion', 'hard'], ['peacock', 'hard'], ['dragon', 'hard'], ['mermaid', 'hard'],
-  ['astronaut', 'hard'], ['volcano', 'hard'], ['tornado', 'hard'], ['lighthouse', 'hard'],
-  ['submarine', 'hard'], ['dinosaur', 'hard'], ['wizard', 'hard'], ['snowman', 'hard'],
-  ['shark', 'hard'], ['telescope', 'hard'], ['crab', 'hard'], ['parachute', 'hard'],
-  ['wolf', 'hard'], ['windmill', 'hard'], ['fountain', 'hard'], ['spaceship', 'hard'],
-  ['sword', 'hard'],
+  // ── HARD (24 words) — complex anatomy or tricky shapes ──────────
+  ['elephant', 'hard'], ['horse', 'hard'], ['penguin', 'hard'],
+  ['hamburger', 'hard'], ['bicycle', 'hard'], ['airplane', 'hard'],
+  ['octopus', 'hard'], ['butterfly', 'hard'], ['giraffe', 'hard'],
+  ['crocodile', 'hard'], ['scorpion', 'hard'], ['peacock', 'hard'],
+  ['dragon', 'hard'], ['mermaid', 'hard'], ['astronaut', 'hard'],
+  ['volcano', 'hard'], ['tornado', 'hard'], ['lighthouse', 'hard'],
+  ['dinosaur', 'hard'], ['shark', 'hard'], ['crab', 'hard'],
+  ['wolf', 'hard'], ['spaceship', 'hard'], ['sword', 'hard'],
 ];
 
 // Sorted: easy first, then medium, then hard
