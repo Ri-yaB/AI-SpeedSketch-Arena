@@ -11,7 +11,7 @@ const EASY_SECONDS           = 10;
 const MED_HARD_SECONDS       = 15;
 const TOTAL_WORDS            = 12;   // 4E + 4M + 4H
 const ROUND_PAUSE_MS         = 4000; // pause between rounds — gives AI result time to arrive
-const BATTLE_WIN_THRESHOLD   = 0.75; // minimum confidence to be eligible to win a round
+const BATTLE_WIN_THRESHOLD   = 0.85; // minimum confidence to be eligible to win a round
 
 function getRoundSeconds(difficulty) {
   return difficulty === 'easy' ? EASY_SECONDS : MED_HARD_SECONDS;
