@@ -2193,6 +2193,43 @@ input {
   text-align: right;
 }
 
+.lb-page__qr {
+  display: flex;
+  justify-content: center;
+  padding: 24px 24px 32px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.lb-page__qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 20px 28px;
+}
+
+.lb-page__qr-card svg {
+  border-radius: 8px;
+}
+
+.lb-page__qr-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-200);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lb-page__qr-url {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-500);
+}
+
 /* ============================================================
    INSTRUCTIONS PAGE
    ============================================================ */

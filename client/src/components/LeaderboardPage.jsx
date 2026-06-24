@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
+const PLATFORM_URL = 'https://aispeedsketch-arena.netlify.app/';
 
 export default function LeaderboardPage({ socketRef }) {
   const [entries, setEntries] = useState([]);
@@ -55,6 +57,20 @@ export default function LeaderboardPage({ socketRef }) {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="lb-page__qr">
+        <div className="lb-page__qr-card">
+          <QRCodeSVG
+            value={PLATFORM_URL}
+            size={120}
+            bgColor="transparent"
+            fgColor="#ffffff"
+            level="M"
+          />
+          <p className="lb-page__qr-label">Scan to play</p>
+          <p className="lb-page__qr-url">aispeedsketch-arena.netlify.app</p>
+        </div>
       </div>
     </div>
   );
