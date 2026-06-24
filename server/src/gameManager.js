@@ -28,64 +28,87 @@ function createPlayer(id, name, email) {
 }
 
 // Load persisted leaderboard from disk on startup
-const allTimeLeaderboard = new Map();
+// Each entry is a separate game attempt: { name, email, score, completedWords, playedAt }
+const allTimeLeaderboard = [];
 try {
   const saved = JSON.parse(readFileSync(LEADERBOARD_FILE, 'utf8'));
-  for (const [key, val] of Object.entries(saved)) {
-    allTimeLeaderboard.set(key, val);
+  if (Array.isArray(saved)) {
+    allTimeLeaderboard.push(...saved);
+  } else {
+    // Migrate old Map-style format to array of individual attempts
+    for (const val of Object.values(saved)) {
+      allTimeLeaderboard.push({
+        name: val.name,
+        email: val.email || '',
+        score: val.bestScore || val.score || 0,
+        completedWords: val.completedWords || 0,
+        playedAt: val.lastPlayed || Date.now(),
+      });
+    }
   }
-  console.log(`[Leaderboard] Loaded ${allTimeLeaderboard.size} entries from disk`);
+  console.log(`[Leaderboard] Loaded ${allTimeLeaderboard.length} entries from disk`);
 } catch {
   // File doesn't exist yet — start fresh
 }
 
+// Tracks array index of current in-progress game entry per playerId (for live updates)
+const liveGameEntries = new Map();
+
 function saveLeaderboard() {
   try {
-    const obj = Object.fromEntries(allTimeLeaderboard);
-    writeFileSync(LEADERBOARD_FILE, JSON.stringify(obj), 'utf8');
+    writeFileSync(LEADERBOARD_FILE, JSON.stringify(allTimeLeaderboard), 'utf8');
   } catch (err) {
     console.error('[Leaderboard] Failed to save:', err.message);
   }
 }
 
-function getAllTimeKey(name, email) {
-  return (email && email.trim()) ? email.trim().toLowerCase() : name.trim().toLowerCase();
-}
-
-// liveUpdate=true: called per-word during a game (only refreshes current score, no game count bump)
-// liveUpdate=false: called at game end (bumps gamesPlayed and totalScore)
+// liveUpdate=true: called per-word during a game — updates the in-progress entry in place
+// liveUpdate=false: called at game end — finalises and freezes the entry
 function updateAllTimeLeaderboard(players, liveUpdate = true) {
   for (const p of players) {
-    if (p.score <= 0) continue;
-    const key = getAllTimeKey(p.name, p.email);
-    const existing = allTimeLeaderboard.get(key);
-    if (!existing) {
-      allTimeLeaderboard.set(key, {
-        name: p.name,
-        email: p.email,
-        bestScore: p.score,
-        totalScore: liveUpdate ? 0 : p.score, // totalScore committed at game end
-        gamesPlayed: liveUpdate ? 0 : 1,
-        completedWords: p.completedWords?.length || 0,
-        lastPlayed: Date.now(),
-      });
+    if (p.score <= 0 && liveUpdate) continue;
+
+    if (liveUpdate) {
+      if (liveGameEntries.has(p.id)) {
+        // Update existing live entry in place
+        const idx = liveGameEntries.get(p.id);
+        allTimeLeaderboard[idx].score = p.score;
+        allTimeLeaderboard[idx].completedWords = p.completedWords?.length || 0;
+      } else {
+        // First correct word — create a new entry for this game attempt
+        const idx = allTimeLeaderboard.length;
+        allTimeLeaderboard.push({
+          name: p.name,
+          email: p.email || '',
+          score: p.score,
+          completedWords: p.completedWords?.length || 0,
+          playedAt: Date.now(),
+        });
+        liveGameEntries.set(p.id, idx);
+      }
     } else {
-      existing.bestScore = Math.max(existing.bestScore, p.score);
-      existing.completedWords = p.completedWords?.length || 0;
-      existing.lastPlayed = Date.now();
-      existing.name = p.name;
-      if (p.email) existing.email = p.email;
-      if (!liveUpdate) {
-        existing.totalScore += p.score;
-        existing.gamesPlayed += 1;
+      // Game over — finalise the entry
+      if (liveGameEntries.has(p.id)) {
+        const idx = liveGameEntries.get(p.id);
+        allTimeLeaderboard[idx].score = p.score;
+        allTimeLeaderboard[idx].completedWords = p.completedWords?.length || 0;
+        allTimeLeaderboard[idx].playedAt = Date.now();
+        liveGameEntries.delete(p.id);
+      } else if (p.score > 0) {
+        allTimeLeaderboard.push({
+          name: p.name,
+          email: p.email || '',
+          score: p.score,
+          completedWords: p.completedWords?.length || 0,
+          playedAt: Date.now(),
+        });
       }
     }
   }
 }
 
 export function getAllTimeLeaderboardArray() {
-  return Array.from(allTimeLeaderboard.values())
-    .sort((a, b) => b.bestScore - a.bestScore);
+  return [...allTimeLeaderboard].sort((a, b) => b.score - a.score);
 }
 
 // Single centralized game — no rooms, no host concept
@@ -314,6 +337,7 @@ export function resetGame(io) {
   game.timeRemaining = GAME_DURATION_SECONDS;
   game.wordPool = [];
   game.players.clear(); // Everyone returns to lobby — must re-join to play again
+  liveGameEntries.clear();
 
   io.to(GLOBAL_ROOM).emit('return-to-lobby');
 }

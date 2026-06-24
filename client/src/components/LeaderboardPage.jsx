@@ -38,7 +38,7 @@ export default function LeaderboardPage({ socketRef }) {
             </div>
             {entries.map((entry, index) => (
               <div
-                key={entry.email || entry.name}
+                key={index}
                 className={`lb-page__row ${index < 3 ? `lb-page__row--top${index + 1}` : ''}`}
                 style={{ animationDelay: `${index * 40}ms` }}
               >
@@ -49,7 +49,7 @@ export default function LeaderboardPage({ socketRef }) {
                   {entry.name}
                   {entry.email && <span className="lb-page__row-email">{entry.email}</span>}
                 </span>
-                <span className="lb-page__row-score">{entry.bestScore} pts</span>
+                <span className="lb-page__row-score">{entry.score} pts</span>
                 <span className="lb-page__row-words">{entry.completedWords}</span>
               </div>
             ))}
