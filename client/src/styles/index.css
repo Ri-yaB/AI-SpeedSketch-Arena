@@ -2091,6 +2091,7 @@ input {
   flex: 1;
   overflow-y: auto;
   padding: 24px 32px;
+  min-width: 0;
 }
 
 .lb-page__empty {
@@ -2193,26 +2194,40 @@ input {
   text-align: right;
 }
 
-.lb-page__qr {
+.lb-page__layout {
   display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.lb-page__qr-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px 24px 32px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 16px;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
 }
 
 .lb-page__qr-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 16px;
-  padding: 20px 28px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  width: 100%;
 }
 
 .lb-page__qr-card svg {
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .lb-page__qr-label {
@@ -2220,14 +2235,16 @@ input {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-200);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .lb-page__qr-url {
   margin: 0;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-500);
+  text-align: center;
+  word-break: break-all;
 }
 
 /* ============================================================
