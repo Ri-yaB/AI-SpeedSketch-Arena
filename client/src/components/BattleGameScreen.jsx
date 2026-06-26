@@ -17,6 +17,8 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
   const [aiToastVisible, setAiToastVisible] = useState(false);
   const toastIdRef = useRef(0);
   const aiToastTimerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const autoSubmittedRoundRef = useRef(null);
 
   const isPanic  = roundTimeRemaining <= 3 && roundTimeRemaining > 0 && !!currentWord;
   const isUrgent = roundTimeRemaining <= 5 && roundTimeRemaining > 0 && !!currentWord;
@@ -56,6 +58,15 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
     battleActions.submitDrawing({ word, imageData, textPenalty });
   }, [battleActions]);
 
+  // Auto-submit the current drawing when the round timer runs out (once per round).
+  useEffect(() => {
+    if (roundTimeRemaining > 0) return;
+    if (!currentWord || hasSubmitted) return;
+    if (autoSubmittedRoundRef.current === currentRound) return;
+    autoSubmittedRoundRef.current = currentRound;
+    canvasRef.current?.autoSubmit();
+  }, [roundTimeRemaining, currentWord, hasSubmitted, currentRound]);
+
   return (
     <div className={`game-screen battle-game-screen ${isPanic ? 'game-screen--panic' : ''}`}>
       <Confetti trigger={confettiTrigger} />
@@ -70,8 +81,10 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
               t.isMe
                 ? <>🏆 You won <strong>{t.word}</strong>! ({t.topConfidence}%)</>
                 : <><strong>{t.winnerName}</strong> won <strong>{t.word}</strong> ({t.topConfidence}%)</>
+            ) : t.submittedCount > 0 ? (
+              <>😬 No winner on <strong>{t.word}</strong> — best was {t.topConfidence}% (need 75%)</>
             ) : (
-              <>No one submitted <strong>{t.word}</strong></>
+              <>No one drew <strong>{t.word}</strong></>
             )}
           </div>
         ))}
@@ -148,6 +161,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
           )}
           <DrawingCanvas
             key={currentRound}
+            ref={canvasRef}
             selectedWord={currentWord}
             onSubmit={handleSubmit}
             disabled={!currentWord || roundTimeRemaining <= 0 || hasSubmitted}

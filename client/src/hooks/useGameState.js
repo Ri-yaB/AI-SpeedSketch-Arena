@@ -14,6 +14,7 @@ const INITIAL_STATE = {
   drawingResults: [],
   hintsRemaining: 2,
   hintWord: null,
+  pendingJudgments: 0,   // drawings submitted but not yet judged by the AI
 };
 
 export function useGameState(socketRef, myPlayerId) {
@@ -78,6 +79,7 @@ export function useGameState(socketRef, myPlayerId) {
           completedWords: newCompleted,
           selectedWord: result.correct ? null : prev.selectedWord,
           drawingResults: newResults,
+          pendingJudgments: Math.max(0, prev.pendingJudgments - 1),
         };
       });
     };
@@ -149,8 +151,9 @@ export function useGameState(socketRef, myPlayerId) {
   const submitDrawing = useCallback(({ word, imageData, textPenalty }) => {
     const socket = socketRef.current;
     if (!socket) return;
-    // Clear selected word immediately — don't wait for AI
-    setState(prev => ({ ...prev, selectedWord: null }));
+    // Clear selected word immediately — don't wait for AI. Track that a
+    // judgment is in flight so the UI can show an "AI is judging…" indicator.
+    setState(prev => ({ ...prev, selectedWord: null, pendingJudgments: prev.pendingJudgments + 1 }));
     socket.emit('submit-drawing', { word, imageData, textPenalty: !!textPenalty });
   }, [socketRef]);
 

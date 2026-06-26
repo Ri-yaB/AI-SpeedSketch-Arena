@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   getCanvasImageBase64,
   clearCanvas,
@@ -9,6 +9,7 @@ import {
   drawSpray,
   drawCalligraphy,
   detectTextWriting,
+  isCanvasBlank,
 } from '../utils/canvasUtils.js';
 import { getWordEmoji } from '../utils/wordEmojis.js';
 
@@ -51,10 +52,10 @@ const CANVAS_WIDTH  = 800;
 const CANVAS_HEIGHT = 580;
 const SHAPE_IDS = new Set(['line', 'rect', 'circle']);
 
-export default function DrawingCanvas({
+const DrawingCanvas = forwardRef(function DrawingCanvas({
   selectedWord, onSubmit, disabled,
   hintsRemaining, hintWord, onUseHint,
-}) {
+}, ref) {
   const canvasRef     = useRef(null);
   const overlayRef    = useRef(null);
   const ctxRef        = useRef(null);
@@ -71,6 +72,7 @@ export default function DrawingCanvas({
   const [brushSize,  setBrushSize] = useState(5);
   const [opacity,    setOpacity]   = useState(1);
   const [textWarning, setTextWarning] = useState(false);
+  const [blankWarning, setBlankWarning] = useState(false);
 
   useEffect(() => {
     const canvas  = canvasRef.current;
@@ -81,8 +83,9 @@ export default function DrawingCanvas({
   }, []);
 
   useEffect(() => {
-    // Clear text warning when word changes
+    // Clear warnings when word changes
     setTextWarning(false);
+    setBlankWarning(false);
   }, [selectedWord]);
 
   useEffect(() => () => { if (sprayTimerRef.current) clearInterval(sprayTimerRef.current); }, []);
@@ -242,6 +245,12 @@ export default function DrawingCanvas({
   const handleSubmit = useCallback(() => {
     if (!selectedWord || disabled) return;
     const canvas = canvasRef.current;
+    // Block empty submissions — a blank canvas should never be scored.
+    if (isCanvasBlank(canvas)) {
+      setBlankWarning(true);
+      setTimeout(() => setBlankWarning(false), 1200);
+      return;
+    }
     const isText = detectTextWriting(canvas);
     if (isText) {
       setTextWarning(true);
@@ -256,6 +265,23 @@ export default function DrawingCanvas({
     // Clear immediately — AI judges in background, result arrives via socket
     clearCanvas(canvasRef);
   }, [selectedWord, disabled, onSubmit]);
+
+  // Auto-submit whatever is on the canvas when the round timer runs out.
+  // Deliberately bypasses `disabled` (which is true once time hits 0) but
+  // still runs the text-detection penalty path, mirroring a manual submit.
+  const autoSubmit = useCallback(() => {
+    if (!selectedWord) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    // Nothing drawn when time ran out → don't submit a blank (no free points).
+    if (isCanvasBlank(canvas)) return;
+    const isText = detectTextWriting(canvas);
+    const imageData = getCanvasImageBase64(canvasRef);
+    onSubmit({ word: selectedWord, imageData, textPenalty: isText });
+    clearCanvas(canvasRef);
+  }, [selectedWord, onSubmit]);
+
+  useImperativeHandle(ref, () => ({ autoSubmit }), [autoSubmit]);
 
   const selectTool = (id) => {
     setTool(id);
@@ -311,6 +337,13 @@ export default function DrawingCanvas({
         {textWarning && (
           <div className="canvas-text-warning">
             <span>✋ No writing! -1 point</span>
+          </div>
+        )}
+
+        {/* Blank canvas warning overlay */}
+        {blankWarning && (
+          <div className="canvas-text-warning">
+            <span>✏️ Draw something first!</span>
           </div>
         )}
 
@@ -427,4 +460,6 @@ export default function DrawingCanvas({
       </button>
     </div>
   );
-}
+});
+
+export default DrawingCanvas;

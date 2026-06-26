@@ -82,6 +82,10 @@ export default function BattleResultsScreen({ battleState, myPlayerId, onPlayAga
                           {Math.round((subs[winner]?.confidence ?? 0) * 100)}%
                         </span>
                       </span>
+                    ) : Object.keys(subs).length > 0 ? (
+                      <span className="battle-word-row__result battle-word-row__result--none">
+                        No winner — best {Math.round(Math.max(0, ...Object.values(subs).map(s => s.confidence || 0)) * 100)}%
+                      </span>
                     ) : (
                       <span className="battle-word-row__result battle-word-row__result--none">— No one drew this</span>
                     )}

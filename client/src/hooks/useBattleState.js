@@ -9,11 +9,11 @@ const INITIAL = {
   wordDifficulty: {},
   // current round state
   currentRound: 0,
-  totalRounds: 12,
+  totalRounds: 5,
   currentWord: null,
   currentDiff: null,
-  roundTimeRemaining: 10,
-  currentRoundTotal: 10,
+  roundTimeRemaining: 15,
+  currentRoundTotal: 15,
   // per-player results this round
   mySubmittedWords: [],
   myResults: [],
@@ -79,6 +79,12 @@ export function useBattleState(socketRef, myPlayerId) {
       setState(prev => ({ ...prev, roundTimeRemaining: timeRemaining }));
     };
 
+    // Time ran out — force the timer to 0 so the canvas auto-submits even if
+    // the final tick was dropped.
+    const onRoundTimeup = () => {
+      setState(prev => ({ ...prev, roundTimeRemaining: 0 }));
+    };
+
     const onDrawingResult = (result) => {
       const id = ++resultIdRef.current;
       setState(prev => ({
@@ -100,13 +106,13 @@ export function useBattleState(socketRef, myPlayerId) {
       }));
     };
 
-    const onWordWinner = ({ word, winnerId, winnerName, isTie, topConfidence, players }) => {
+    const onWordWinner = ({ word, winnerId, winnerName, isTie, topConfidence, submittedCount, players }) => {
       setState(prev => ({
         ...prev,
         players,
         wordWinners: {
           ...prev.wordWinners,
-          [word]: { winnerId, winnerName, isTie, topConfidence },
+          [word]: { winnerId, winnerName, isTie, topConfidence, submittedCount },
         },
       }));
     };
@@ -127,6 +133,7 @@ export function useBattleState(socketRef, myPlayerId) {
     s.on('battle-game-started',       onGameStarted);
     s.on('battle-round-start',        onRoundStart);
     s.on('battle-round-tick',         onRoundTick);
+    s.on('battle-round-timeup',       onRoundTimeup);
     s.on('battle-drawing-result',     onDrawingResult);
     s.on('battle-submissions-update', onSubmissionsUpdate);
     s.on('battle-word-winner',        onWordWinner);
@@ -137,6 +144,7 @@ export function useBattleState(socketRef, myPlayerId) {
       s.off('battle-game-started',       onGameStarted);
       s.off('battle-round-start',        onRoundStart);
       s.off('battle-round-tick',         onRoundTick);
+      s.off('battle-round-timeup',       onRoundTimeup);
       s.off('battle-drawing-result',     onDrawingResult);
       s.off('battle-submissions-update', onSubmissionsUpdate);
       s.off('battle-word-winner',        onWordWinner);

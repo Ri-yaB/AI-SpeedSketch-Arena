@@ -1708,6 +1708,40 @@ input {
   width: 380px;
 }
 
+/* "AI is judging…" indicator shown while a submission is awaiting AI scoring */
+.ai-judging-pill {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-700);
+  backdrop-filter: blur(8px);
+}
+
+.ai-judging-pill__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@media (max-width: 900px) {
+  .ai-judging-pill { bottom: 16px; font-size: 13px; padding: 9px 14px; }
+}
+
 .ai-toast {
   display: flex;
   align-items: flex-start;
@@ -3765,19 +3799,38 @@ input {
    ============================================================ */
 
 @media (max-width: 900px) {
+  /* Let the game screen scroll on phones instead of cramming everything into
+     one viewport (which crushed the canvas to a sliver). */
   .game-screen {
-    height: 100dvh;
-    overflow: hidden;
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  /* Keep the timer/score bar visible while scrolling */
+  .game-topbar {
+    position: sticky;
+    top: 0;
   }
 
   .game-main {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 1 0 auto;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
     padding: 6px;
     gap: 6px;
+  }
+
+  /* Canvas keeps its natural aspect ratio and a usable size; toolbar flows
+     below and the page scrolls if needed. */
+  .drawing-canvas-container { overflow: visible; flex: 1 0 auto; }
+  .canvas-wrapper {
+    flex: none;
+    aspect-ratio: 800 / 580;
+    min-height: 240px;
   }
 
   /* Word pool becomes a horizontal scrolling strip at top */
@@ -3810,7 +3863,8 @@ input {
   .game-panel--center {
     order: 2;
     min-height: 0;
-    flex: 1;
+    flex: 1 0 auto;
+    overflow: visible;
   }
 
   .game-panel--right { display: none; }
@@ -3830,18 +3884,23 @@ input {
 
   .battle-ai-toast {
     bottom: 16px;
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    right: 12px;
+    transform: none;          /* override desktop translateX(-50%) */
+    width: auto;              /* override desktop max-content so it spans the row */
     max-width: none;
+    padding: 12px 16px;
   }
+  .battle-ai-toast__msg { line-height: 1.3; }
 
   .battle-toasts {
     top: auto;
-    bottom: 80px;
+    bottom: 84px;             /* sit above the AI toast, not on top of it */
     right: 8px;
     left: 8px;
     max-width: none;
   }
+  .battle-toast { font-size: 13px; }
 
   .ai-feedback-stack {
     right: 8px;
@@ -3940,12 +3999,21 @@ input {
   .game-timer__value  { font-size: 18px; }
   .game-score__value  { font-size: 14px; }
 
+  /* Tighten the top bar so the score/rank cluster isn't clipped */
+  .game-topbar          { padding: 6px 8px; gap: 6px; }
+  .game-topbar__left,
+  .game-topbar__center  { gap: 6px; }
+  .game-topbar__right   { gap: 6px; flex-shrink: 0; }
+
   /* Toolbar compact */
   .canvas-toolbar  { padding: 6px 10px; }
   .toolbar-row     { gap: 5px; }
   .tool-btn        { width: 32px; height: 32px; font-size: 15px; }
   .brush-slider    { width: 60px; }
   .game-panel--center { min-height: 0; }
+
+  /* Let the 16 colour swatches wrap instead of overflowing the row */
+  .color-group { flex-wrap: wrap; }
 
   /* Battle lobby form full width */
   .battle-lobby__inner { max-width: 100%; }
@@ -3995,3 +4063,4 @@ input {
   .lb-page__row:hover { transform: none; }
   .word-card:hover:not(:disabled) { transform: none; }
   .rule-card:hover   { transform: none; }
+}
