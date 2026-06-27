@@ -42,13 +42,13 @@ const BATTLE_STEPS = [
   },
   {
     step: '02', icon: '🃏',
-    title: 'Everyone gets the same 10 words',
-    desc: 'The host hits Start and all players receive the same shared pool: 4 Easy, 4 Medium, and 2 Hard words.',
+    title: 'Everyone gets the same 5 words',
+    desc: 'The host hits Start and all players play the same 5 rounds: 2 Easy, 2 Medium, and 1 Hard word.',
   },
   {
     step: '03', icon: '🖌️',
-    title: 'Draw any word in 90 seconds',
-    desc: 'Pick a word, draw it, and submit. The AI scores your drawing with a confidence percentage.',
+    title: 'Draw the word in 15 seconds',
+    desc: 'Each round you have 15 seconds to draw the word and submit. Run out of time and your drawing is submitted automatically. The AI scores it with a confidence percentage.',
   },
   {
     step: '04', icon: '🏆',

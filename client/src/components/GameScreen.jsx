@@ -18,6 +18,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
   const {
     timeRemaining, myScore, selectedWord, completedWords,
     wordPool, wordDifficulty, leaderboard, drawingResults, hintsRemaining, hintWord,
+    pendingJudgments,
   } = state;
 
   const [activeTab, setActiveTab] = useState('draw');
@@ -217,6 +218,13 @@ export default function GameScreen({ state, myPlayerId, actions }) {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {pendingJudgments > 0 && (
+        <div className="ai-judging-pill">
+          <span className="ai-judging-pill__spinner" />
+          🤖 AI is judging your drawing…
         </div>
       )}
 

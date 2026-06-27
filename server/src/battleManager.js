@@ -7,14 +7,14 @@ const rooms = new Map();
 // roomCode → finished battle result (persists after room cleanup, max 100 entries)
 const battleHistory = new Map();
 
-const EASY_SECONDS           = 10;
-const MED_HARD_SECONDS       = 15;
-const TOTAL_WORDS            = 12;   // 4E + 4M + 4H
+const ROUND_SECONDS          = 15;   // every battle round is 15s regardless of difficulty
+const TOTAL_WORDS            = 5;    // 2E + 2M + 1H
 const ROUND_PAUSE_MS         = 4000; // pause between rounds — gives AI result time to arrive
-const BATTLE_WIN_THRESHOLD   = 0.85; // minimum confidence to be eligible to win a round
+const TIMEUP_GRACE_MS        = 1500; // window after time runs out for auto-submits to arrive
+const BATTLE_WIN_THRESHOLD   = 0.75; // minimum confidence for a drawing to win a round
 
-function getRoundSeconds(difficulty) {
-  return difficulty === 'easy' ? EASY_SECONDS : MED_HARD_SECONDS;
+function getRoundSeconds() {
+  return ROUND_SECONDS;
 }
 
 function generateCode() {
@@ -24,12 +24,40 @@ function generateCode() {
   return code;
 }
 
-function pickBattleWords() {
+// Words currently in play across all active (non-finished) rooms — so two
+// concurrent rooms never get the same words.
+function getWordsInUse(excludeCode = null) {
+  const used = new Set();
+  for (const [code, room] of rooms.entries()) {
+    if (code === excludeCode) continue;
+    if (room.status === 'finished') continue;
+    for (const w of room.wordPool || []) used.add(w);
+  }
+  return used;
+}
+
+// Pick `count` [word, difficulty] pairs of the given difficulty, preferring
+// words not already used by other active rooms. Falls back to the full pool
+// only if there aren't enough unused words left.
+function pickFromDifficulty(difficulty, count, used) {
   const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
-  const easy   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'easy')).slice(0, 6);
-  const medium = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'medium')).slice(0, 4);
-  const hard   = shuffle(WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === 'hard')).slice(0, 2);
-  return [...easy, ...medium, ...hard]; // 12 [word, difficulty] pairs: 6E + 4M + 2H
+  const pool = WORD_LIST_WITH_DIFFICULTY.filter(([, d]) => d === difficulty);
+  const fresh = shuffle(pool.filter(([w]) => !used.has(w)));
+  const picked = fresh.slice(0, count);
+  if (picked.length < count) {
+    // Not enough unused words — top up from the rest (still shuffled)
+    const remaining = shuffle(pool.filter(([w]) => !picked.some(([pw]) => pw === w)));
+    picked.push(...remaining.slice(0, count - picked.length));
+  }
+  return picked;
+}
+
+function pickBattleWords(excludeCode = null) {
+  const used = getWordsInUse(excludeCode);
+  const easy   = pickFromDifficulty('easy', 2, used);
+  const medium = pickFromDifficulty('medium', 2, used);
+  const hard   = pickFromDifficulty('hard', 1, used);
+  return [...easy, ...medium, ...hard]; // 5 [word, difficulty] pairs: 2E + 2M + 1H
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -88,8 +116,9 @@ export function createRoom(socketId, name, email, isAdminHost = false) {
     wordPool: [], wordDifficulty: {},
     wordPairs: [],
     currentRound: -1,
-    roundTimeRemaining: EASY_SECONDS,
+    roundTimeRemaining: ROUND_SECONDS,
     roundTimer: null,
+    timeupTimer: null,
     submissions: {},
     wordWinners: {},
   };
@@ -117,7 +146,7 @@ export function startBattleGame(code, hostSocketId, io) {
   if (room.status !== 'waiting')      return { error: 'Game already started.' };
   if (room.players.size < 2)          return { error: 'Need at least 2 players to start.' };
 
-  const pairs = pickBattleWords();
+  const pairs = pickBattleWords(code);
   room.wordPairs      = pairs.map(([w, d]) => ({ word: w, difficulty: d }));
   room.wordPool       = pairs.map(([w]) => w);
   room.wordDifficulty = Object.fromEntries(pairs);
@@ -170,7 +199,14 @@ function startRound(code, roundIdx, io) {
     if (room.roundTimeRemaining <= 0) {
       clearInterval(room.roundTimer);
       room.roundTimer = null;
-      resolveAndAdvance(code, roundIdx, io);
+      // Tell clients time is up so they auto-submit whatever is on the canvas,
+      // then give those submissions a short window to arrive before resolving.
+      if (process.env.DEBUG_JUDGE) console.log(`[Battle] Round ${roundIdx + 1} time up — grace window for "${word}"`);
+      io.to(code).emit('battle-round-timeup', { round: roundIdx + 1, word });
+      room.timeupTimer = setTimeout(() => {
+        room.timeupTimer = null;
+        resolveAndAdvance(code, roundIdx, io);
+      }, TIMEUP_GRACE_MS);
     }
   }, 1000);
 }
@@ -185,8 +221,9 @@ function resolveAndAdvance(code, roundIdx, io) {
   // Guard: if this round was already resolved (race between timer + early-submit), bail out
   if (room.wordWinners[word] !== undefined) return;
 
-  // Clear any lingering timer just in case
-  if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
+  // Clear any lingering timers just in case
+  if (room.roundTimer)  { clearInterval(room.roundTimer); room.roundTimer = null; }
+  if (room.timeupTimer) { clearTimeout(room.timeupTimer); room.timeupTimer = null; }
 
   resolveWord(code, word, io);
 
@@ -267,31 +304,29 @@ function resolveWord(code, word, io) {
   const room = rooms.get(code);
   if (!room || room.wordWinners[word] !== undefined) return;
 
-  const subs = room.submissions[word];
-  if (!subs || Object.keys(subs).length === 0) {
-    room.wordWinners[word] = null;
-    io.to(code).emit('battle-word-winner', {
-      word,
-      winnerId: null,
-      winnerName: null,
-      isTie: false,
-      topConfidence: 0,
-      players: buildPlayerSnapshot(room),
-    });
-    return;
-  }
+  const subs = room.submissions[word] || {};
+  const subEntries = Object.entries(subs);
+  const submittedCount = subEntries.length;
 
-  // Only consider submissions that meet the minimum confidence threshold
-  const eligibleSubs = Object.entries(subs).filter(([, s]) => s.confidence >= BATTLE_WIN_THRESHOLD);
+  // Highest confidence across ALL submissions — used for messaging even when
+  // nobody clears the win threshold.
+  let overallTop = 0;
+  for (const [, s] of subEntries) if (s.confidence > overallTop) overallTop = s.confidence;
+
+  // Submissions good enough to actually win the round's points.
+  const eligibleSubs = subEntries.filter(([, s]) => s.confidence >= BATTLE_WIN_THRESHOLD);
 
   if (eligibleSubs.length === 0) {
+    // Either nobody submitted (submittedCount 0) or everyone's drawing was too
+    // weak to win (submittedCount > 0). The client distinguishes these.
     room.wordWinners[word] = null;
     io.to(code).emit('battle-word-winner', {
       word,
       winnerId: null,
       winnerName: null,
       isTie: false,
-      topConfidence: 0,
+      submittedCount,
+      topConfidence: Math.round(overallTop * 100),
       players: buildPlayerSnapshot(room),
     });
     return;
@@ -316,18 +351,16 @@ function resolveWord(code, word, io) {
 
   if (tie) {
     room.wordWinners[word] = 'tie';
-    for (const [pid, s] of Object.entries(subs)) {
+    for (const [pid, s] of eligibleSubs) {
       if (s.confidence === topConfidence) {
         const p = room.players.get(pid);
         if (p) p.score += pts;
       }
     }
-  } else if (winner) {
+  } else {
     room.wordWinners[word] = winner;
     const p = room.players.get(winner);
     if (p) p.score += pts;
-  } else {
-    room.wordWinners[word] = null;
   }
 
   io.to(code).emit('battle-word-winner', {
@@ -335,6 +368,7 @@ function resolveWord(code, word, io) {
     winnerId: room.wordWinners[word],
     winnerName: winner && !tie ? room.players.get(winner)?.name : null,
     isTie: tie,
+    submittedCount,
     topConfidence: Math.round(topConfidence * 100),
     players: buildPlayerSnapshot(room),
   });
@@ -345,7 +379,8 @@ export function endBattleGame(code, io) {
   if (!room || room.status === 'finished') return;
 
   room.status = 'finished';
-  if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
+  if (room.roundTimer)  { clearInterval(room.roundTimer); room.roundTimer = null; }
+  if (room.timeupTimer) { clearTimeout(room.timeupTimer); room.timeupTimer = null; }
 
   for (const word of room.wordPool) {
     if (room.wordWinners[word] === undefined) {
@@ -384,6 +419,7 @@ export function removePlayerFromRoom(socketId, io) {
     // Admin host disconnect — clean up room if still waiting
     if (room.isAdminHost && room.hostId === socketId && !room.players.has(socketId)) {
       if (room.roundTimer) clearInterval(room.roundTimer);
+      if (room.timeupTimer) clearTimeout(room.timeupTimer);
       if (room.status === 'waiting') rooms.delete(code);
       return;
     }
@@ -392,6 +428,7 @@ export function removePlayerFromRoom(socketId, io) {
 
     if (room.players.size === 0) {
       if (room.roundTimer) clearInterval(room.roundTimer);
+      if (room.timeupTimer) clearTimeout(room.timeupTimer);
       rooms.delete(code);
       return;
     }

@@ -4,7 +4,7 @@ import DHSLogo from './DHSLogo.jsx';
 const ADMIN_PASSWORD = 'dhs2026';
 
 const BATTLE_INSTRUCTIONS = [
-  { num: '01', icon: '⚔️', label: 'Same Word, Same Time', text: '12 rounds of 10 seconds each. All players draw the exact same word simultaneously.' },
+  { num: '01', icon: '⚔️', label: 'Same Word, Same Time', text: '5 rounds of 15 seconds each. All players draw the exact same word simultaneously.' },
   { num: '02', icon: '🤖', label: 'Best Drawing Wins', text: 'AI judges every sketch. The highest confidence score claims the round. Easy +2 pts, Hard +4 pts.' },
   { num: '03', icon: '🚫', label: 'No Cheating', text: 'Writing the word on canvas is detected instantly and costs 1 point. Draw, never spell.' },
 ];
@@ -230,7 +230,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
 
           <div className="battle-info-card">
             <span>⚔️</span>
-            <span>12 rounds — 4 Easy · 4 Medium · 4 Hard · 10 seconds each</span>
+            <span>5 rounds — 2 Easy · 2 Medium · 1 Hard · 15 seconds each</span>
           </div>
 
           {error && <div className="battle-error">{error}</div>}

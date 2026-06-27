@@ -127,6 +127,28 @@ export function detectTextWriting(canvas) {
   return aspectRatio > 2.0 && verticalFraction < 0.35;
 }
 
+/**
+ * Returns true if the canvas is effectively blank (nothing meaningful drawn).
+ * Counts non-white pixels; a handful of stray antialiased pixels still counts
+ * as blank. Used to stop empty submissions from being scored.
+ */
+export function isCanvasBlank(canvas) {
+  if (!canvas) return true;
+  const ctx = canvas.getContext('2d');
+  const { width, height } = canvas;
+  const data = ctx.getImageData(0, 0, width, height).data;
+  let marked = 0;
+  // Sample every 2nd pixel for speed — still plenty sensitive.
+  for (let i = 0; i < data.length; i += 8) {
+    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    if (brightness < 245 && data[i + 3] > 30) {
+      marked++;
+      if (marked > 120) return false; // enough ink → not blank
+    }
+  }
+  return true;
+}
+
 // ─── New drawing utilities ────────────────────────────────────────────────────
 
 function hexToRgb(hex) {
