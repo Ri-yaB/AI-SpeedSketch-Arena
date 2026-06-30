@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DHSLogo from './DHSLogo.jsx';
 
 const ADMIN_PASSWORD = 'dhs2026';
@@ -9,7 +9,7 @@ const BATTLE_INSTRUCTIONS = [
   { num: '03', icon: '🚫', label: 'No Cheating', text: 'Writing the word on canvas is detected instantly and costs 1 point. Draw, never spell.' },
 ];
 
-export default function BattleLobbyScreen({ onBack, battleState, battleActions, myPlayerId }) {
+export default function BattleLobbyScreen({ onBack, battleState, battleActions, myPlayerId, socketRef }) {
   const { status, roomCode, isHost, players } = battleState;
 
   // Player join state
@@ -25,6 +25,8 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminPass, setAdminPass]           = useState('');
   const [adminError, setAdminError]         = useState('');
+  const [battleModeOn, setBattleModeOn]     = useState(false);
+  const [toggleLoading, setToggleLoading]   = useState(false);
 
   // Instructions overlay (players only)
   const [showInstructions, setShowInstructions] = useState(false);
@@ -56,6 +58,28 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
     const res = await battleActions.createRoom('Admin', 'admin@dhs2026.com', true);
     if (!res.success) setError(res.error || 'Could not create room.');
     setLoading(false);
+  };
+
+  // Sync battle mode status from server
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.emit('get-battle-status', null, (res) => {
+      if (res) setBattleModeOn(res.enabled);
+    });
+    const onChanged = ({ enabled }) => setBattleModeOn(enabled);
+    s.on('battle-mode-changed', onChanged);
+    return () => s.off('battle-mode-changed', onChanged);
+  }, [socketRef]);
+
+  const handleToggleBattleMode = async () => {
+    const s = socketRef?.current;
+    if (!s) return;
+    setToggleLoading(true);
+    s.emit('admin-set-battle-enabled', { enabled: !battleModeOn, adminPassword: ADMIN_PASSWORD }, (res) => {
+      if (res?.success) setBattleModeOn(res.enabled);
+      setToggleLoading(false);
+    });
   };
 
   const handleStart = async () => {
@@ -123,6 +147,30 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
           </div>
 
           <div className="admin-panel">
+            {/* Battle mode toggle */}
+            <div className="admin-toggle-row">
+              <div className="admin-toggle-info">
+                <div className="admin-toggle-info__title">Battle Mode</div>
+                <div className="admin-toggle-info__sub">
+                  {battleModeOn ? 'Visible to all players' : 'Hidden from players'}
+                </div>
+              </div>
+              <button
+                className={`admin-toggle-btn ${battleModeOn ? 'admin-toggle-btn--on' : 'admin-toggle-btn--off'}`}
+                onClick={handleToggleBattleMode}
+                disabled={toggleLoading}
+              >
+                <span className="admin-toggle-btn__track">
+                  <span className="admin-toggle-btn__thumb" />
+                </span>
+                <span className="admin-toggle-btn__label">
+                  {battleModeOn ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
+
+            <div className="admin-panel__divider" />
+
             <div className="admin-panel__title">Create a Battle Room</div>
             <div className="admin-panel__sub">
               One click generates a room code you can share with players.

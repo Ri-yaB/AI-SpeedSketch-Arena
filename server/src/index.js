@@ -62,6 +62,9 @@ app.get('/leaderboard', (req, res) => {
   res.json({ leaderboard: getAllTimeLeaderboardArray() });
 });
 
+// ── Battle mode toggle (admin-controlled) ──────────────────────────────────
+let battleModeEnabled = false;
+
 io.on('connection', (socket) => {
   console.log(`[+] Connected: ${socket.id}`);
 
@@ -233,6 +236,24 @@ io.on('connection', (socket) => {
 
   socket.on('get-all-battle-results', (_, callback) => {
     callback?.({ success: true, results: getAllBattleResults() });
+  });
+
+  // ----------------------------------------------------------------
+  // Battle mode enable/disable (admin only)
+  // ----------------------------------------------------------------
+  socket.on('get-battle-status', (_, callback) => {
+    callback?.({ enabled: battleModeEnabled });
+  });
+
+  socket.on('admin-set-battle-enabled', ({ enabled, adminPassword }, callback) => {
+    if (adminPassword !== (process.env.ADMIN_PASSWORD || 'dhs2026')) {
+      return callback?.({ success: false, error: 'Unauthorized.' });
+    }
+    battleModeEnabled = !!enabled;
+    // Broadcast to all connected clients
+    io.emit('battle-mode-changed', { enabled: battleModeEnabled });
+    console.log(`[Admin] Battle mode ${battleModeEnabled ? 'ENABLED' : 'DISABLED'}`);
+    callback?.({ success: true, enabled: battleModeEnabled });
   });
 
   // ----------------------------------------------------------------

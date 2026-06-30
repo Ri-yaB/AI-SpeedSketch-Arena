@@ -22,8 +22,9 @@ const NAV_TABS = [
 export default function App() {
   const { socketRef, connected, connectionError } = useSocket();
   const [myPlayerId, setMyPlayerId] = useState(null);
-  const [activeTab, setActiveTab]       = useState('game');
+  const [activeTab, setActiveTab]   = useState('game');
   const [mode, setMode]             = useState(null); // null | 'solo' | 'battle'
+  const [battleEnabled, setBattleEnabled] = useState(false);
   const spectatedRef = useRef(false);
 
   const { state, actions }               = useGameState(socketRef, myPlayerId);
@@ -41,6 +42,19 @@ export default function App() {
       s.off('connect', onConnect);
       s.off('disconnect', onDisconnect);
     };
+  }, [socketRef]);
+
+  // Sync battle mode enabled state from server
+  useEffect(() => {
+    const s = socketRef.current;
+    if (!s) return;
+    // Query current status on connect
+    s.emit('get-battle-status', null, (res) => {
+      if (res) setBattleEnabled(res.enabled);
+    });
+    const onChanged = ({ enabled }) => setBattleEnabled(enabled);
+    s.on('battle-mode-changed', onChanged);
+    return () => s.off('battle-mode-changed', onChanged);
   }, [socketRef]);
 
   useEffect(() => {
@@ -68,6 +82,7 @@ export default function App() {
         <ModeSelectScreen
           onSelectSolo={() => setMode('solo')}
           onSelectBattle={() => setMode('battle')}
+          battleEnabled={battleEnabled}
         />
       );
     }
@@ -108,6 +123,7 @@ export default function App() {
           battleState={battleState}
           battleActions={battleActions}
           myPlayerId={myPlayerId}
+          socketRef={socketRef}
         />
       );
     }

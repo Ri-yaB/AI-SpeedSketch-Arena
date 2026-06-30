@@ -19,13 +19,8 @@ const DOODLES = [
   { id: 15, x: 55, y: 40, size: 42, delay: 5,   dur: 13, rotate: -5,  anim: 'drift', svg: <svg viewBox="0 0 60 20" fill="none"><path d="M4 10 C10 2, 16 18, 22 10 C28 2, 34 18, 40 10 C46 2, 52 18, 58 10" stroke="#4F8EF7" strokeWidth="2" strokeLinecap="round"/></svg> },
 ];
 
-function isBattleUnlocked() {
-  const h = new Date().getHours();
-  return h >= 17; // 5:00 PM
-}
-
-export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
-  const battleUnlocked = isBattleUnlocked();
+export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleEnabled }) {
+  const battleUnlocked = !!battleEnabled;
   return (
     <div className="mode-select">
       {/* Floating doodle background */}
@@ -83,14 +78,14 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
           >
             {battleUnlocked
               ? <div className="mode-card__badge">LIVE</div>
-              : <div className="mode-card__badge mode-card__badge--lock">🔒 5:00 PM</div>
+              : <div className="mode-card__badge mode-card__badge--lock">🔒 Coming Soon</div>
             }
             <div className="mode-card__icon">⚔️</div>
             <div className="mode-card__name">Battle Mode</div>
             <div className="mode-card__desc">
               {battleUnlocked
                 ? 'Top 8 solo players face off live. Everyone draws the same word — best AI confidence wins the round!'
-                : 'Unlocks at 5:00 PM. The top 8 players from the solo leaderboard will be invited to battle live on stage.'
+                : 'The top 8 players from the solo leaderboard will be invited to battle live on stage. Stay tuned!'
               }
             </div>
             <div className="mode-card__pills">
@@ -99,7 +94,7 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
               <span className="mode-pill">Best Drawing Wins</span>
             </div>
             <div className="mode-card__cta">
-              {battleUnlocked ? 'Start Battle →' : 'Unlocks at 5:00 PM'}
+              {battleUnlocked ? 'Start Battle →' : 'Not available yet'}
             </div>
           </button>
         </div>
