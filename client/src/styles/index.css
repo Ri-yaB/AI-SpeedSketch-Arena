@@ -2231,7 +2231,7 @@ input {
 .lb-page__layout {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   min-height: 0;
 }
 
@@ -2246,6 +2246,9 @@ input {
   position: sticky;
   top: 0;
   align-self: flex-start;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: visible;
 }
 
 .lb-page__qr-card {
@@ -2279,6 +2282,113 @@ input {
   color: var(--text-500);
   text-align: center;
   word-break: break-all;
+}
+
+/* ============================================================
+   WORD SELECT MODAL
+   ============================================================ */
+
+.word-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 16px;
+}
+
+.word-modal {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+.word-modal__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-900);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.word-modal__subtitle {
+  font-size: 13px;
+  color: var(--text-400);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.word-modal__group {
+  margin-bottom: 16px;
+}
+
+.word-modal__group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.word-modal__words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.word-modal__btn {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-900);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background var(--tx-fast), border-color var(--tx-fast), transform var(--tx-fast);
+}
+
+.word-modal__btn:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  transform: translateY(-1px);
+}
+
+.word-modal__done {
+  text-align: center;
+  color: var(--text-400);
+  padding: 20px 0;
+}
+
+/* ============================================================
+   MODE CARD — LOCKED STATE
+   ============================================================ */
+
+.mode-card--locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.mode-card--locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.mode-card__badge--lock {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-400);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 /* ============================================================
@@ -4020,6 +4130,32 @@ input {
 
   /* Mode select compact */
   .mode-select__inner { padding: 20px 14px; }
+
+  /* ── Solo game screen: single-column canvas-only layout ── */
+  .game-main {
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    gap: 6px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide word pool panel and leaderboard panel — word chosen via modal, LB via tab */
+  .game-panel--left,
+  .game-panel--right { display: none; }
+
+  /* Canvas panel fills available space */
+  .game-panel--center {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Leaderboard QR sidebar hides on mobile */
+  .lb-page__qr-sidebar { display: none; }
+
+  /* Leaderboard body full width */
+  .lb-page__body { padding: 16px; }
 }
 
 /* ============================================================

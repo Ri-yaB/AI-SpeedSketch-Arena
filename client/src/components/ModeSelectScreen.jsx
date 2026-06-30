@@ -19,7 +19,13 @@ const DOODLES = [
   { id: 15, x: 55, y: 40, size: 42, delay: 5,   dur: 13, rotate: -5,  anim: 'drift', svg: <svg viewBox="0 0 60 20" fill="none"><path d="M4 10 C10 2, 16 18, 22 10 C28 2, 34 18, 40 10 C46 2, 52 18, 58 10" stroke="#4F8EF7" strokeWidth="2" strokeLinecap="round"/></svg> },
 ];
 
+function isBattleUnlocked() {
+  const h = new Date().getHours();
+  return h >= 17; // 5:00 PM
+}
+
 export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
+  const battleUnlocked = isBattleUnlocked();
   return (
     <div className="mode-select">
       {/* Floating doodle background */}
@@ -70,19 +76,31 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle }) {
           </button>
 
           {/* Battle Mode */}
-          <button className="mode-card mode-card--battle" onClick={onSelectBattle}>
-            <div className="mode-card__badge">NEW</div>
+          <button
+            className={`mode-card mode-card--battle ${!battleUnlocked ? 'mode-card--locked' : ''}`}
+            onClick={battleUnlocked ? onSelectBattle : undefined}
+            disabled={!battleUnlocked}
+          >
+            {battleUnlocked
+              ? <div className="mode-card__badge">LIVE</div>
+              : <div className="mode-card__badge mode-card__badge--lock">🔒 5:00 PM</div>
+            }
             <div className="mode-card__icon">⚔️</div>
             <div className="mode-card__name">Battle Mode</div>
             <div className="mode-card__desc">
-              Create a private room or join a friend's. Everyone draws the same word. 5 rounds, 15 seconds each. Best AI confidence wins the round!
+              {battleUnlocked
+                ? 'Top 8 solo players face off live. Everyone draws the same word — best AI confidence wins the round!'
+                : 'Unlocks at 5:00 PM. The top 8 players from the solo leaderboard will be invited to battle live on stage.'
+              }
             </div>
             <div className="mode-card__pills">
+              <span className="mode-pill">Top 8 Players</span>
               <span className="mode-pill">5 Rounds</span>
-              <span className="mode-pill">2E / 2M / 1H</span>
               <span className="mode-pill">Best Drawing Wins</span>
             </div>
-            <div className="mode-card__cta">Start Battle →</div>
+            <div className="mode-card__cta">
+              {battleUnlocked ? 'Start Battle →' : 'Unlocks at 5:00 PM'}
+            </div>
           </button>
         </div>
       </div>

@@ -10,7 +10,6 @@ import BattleLobbyScreen from './BattleLobbyScreen.jsx';
 import BattleGameScreen from './BattleGameScreen.jsx';
 import BattleResultsScreen from './BattleResultsScreen.jsx';
 import LeaderboardPage from './LeaderboardPage.jsx';
-import BattleLeaderboardPage from './BattleLeaderboardPage.jsx';
 import DHSLogo from './DHSLogo.jsx';
 import AVLogo from './AVLogo.jsx';
 import DHSOrb from './DHSOrb.jsx';
@@ -24,7 +23,6 @@ export default function App() {
   const { socketRef, connected, connectionError } = useSocket();
   const [myPlayerId, setMyPlayerId] = useState(null);
   const [activeTab, setActiveTab]       = useState('game');
-  const [lbSubTab, setLbSubTab]         = useState('solo'); // 'solo' | 'battle'
   const [mode, setMode]             = useState(null); // null | 'solo' | 'battle'
   const spectatedRef = useRef(false);
 
@@ -165,31 +163,7 @@ export default function App() {
 
       <div className={`app-content ${showNav ? 'app-content--with-nav' : ''}`}>
         {activeTab === 'game'        && renderGameContent()}
-        {activeTab === 'leaderboard' && (
-          <div className="lb-wrapper">
-            <div className="lb-subtabs">
-              <button
-                className={`lb-subtab ${lbSubTab === 'solo' ? 'lb-subtab--active' : ''}`}
-                onClick={() => setLbSubTab('solo')}
-              >
-                🏆 Solo
-              </button>
-              <button
-                className={`lb-subtab lb-subtab--battle ${lbSubTab === 'battle' ? 'lb-subtab--active' : ''}`}
-                onClick={() => setLbSubTab('battle')}
-              >
-                ⚔️ Battle
-              </button>
-            </div>
-            {lbSubTab === 'solo'   && <LeaderboardPage socketRef={socketRef} />}
-            {lbSubTab === 'battle' && (
-              <BattleLeaderboardPage
-                socketRef={socketRef}
-                defaultCode={battleState.status !== 'idle' ? battleState.roomCode : ''}
-              />
-            )}
-          </div>
-        )}
+        {activeTab === 'leaderboard' && <LeaderboardPage socketRef={socketRef} />}
       </div>
     </div>
   );

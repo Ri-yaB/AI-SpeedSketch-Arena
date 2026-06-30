@@ -14,6 +14,40 @@ const STREAK_LABELS = {
   5: { text: '💥 UNSTOPPABLE!', color: '#a855f7' },
 };
 
+const DIFF_COLORS = { easy: '#15803D', medium: '#B45309', hard: '#DC2626' };
+
+function WordSelectModal({ words, wordDifficulty, completedWords, onSelect }) {
+  const available = words.filter(w => !completedWords.includes(w));
+  const groups = { easy: [], medium: [], hard: [] };
+  for (const w of available) groups[wordDifficulty[w] || 'easy'].push(w);
+
+  return (
+    <div className="word-modal-overlay">
+      <div className="word-modal">
+        <div className="word-modal__title">Choose a word to draw</div>
+        <div className="word-modal__subtitle">Pick any word — canvas unlocks once you choose</div>
+        {['easy', 'medium', 'hard'].map(diff => groups[diff].length > 0 && (
+          <div key={diff} className="word-modal__group">
+            <div className="word-modal__group-label" style={{ color: DIFF_COLORS[diff] }}>
+              {diff} · {diff === 'easy' ? '2 pts' : diff === 'medium' ? '3 pts' : '4 pts'}
+            </div>
+            <div className="word-modal__words">
+              {groups[diff].map(w => (
+                <button key={w} className="word-modal__btn" onClick={() => onSelect(w)}>
+                  {w}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        {available.length === 0 && (
+          <div className="word-modal__done">All words completed!</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function GameScreen({ state, myPlayerId, actions }) {
   const {
     timeRemaining, myScore, selectedWord, completedWords,
@@ -22,6 +56,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
   } = state;
 
   const [activeTab, setActiveTab] = useState('draw');
+  const [showWordModal, setShowWordModal] = useState(true);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [scorePops, setScorePops] = useState([]); // { id, value }
   const [streak, setStreak] = useState(0);
@@ -72,6 +107,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
 
   const handleSelectWord = useCallback((word) => {
     actions.selectWord(word);
+    setShowWordModal(false);
   }, [actions]);
 
   const formatTime = (secs) => {
@@ -83,9 +119,29 @@ export default function GameScreen({ state, myPlayerId, actions }) {
   const timerPct = (timeRemaining / 90) * 100;
   const myRank = leaderboard.findIndex(p => p.id === myPlayerId) + 1;
 
+  // Re-open modal when a word is submitted (selectedWord clears) and words remain
+  const prevWordRef = useRef(selectedWord);
+  useEffect(() => {
+    if (prevWordRef.current && !selectedWord && timeRemaining > 0) {
+      setShowWordModal(true);
+    }
+    prevWordRef.current = selectedWord;
+  }, [selectedWord, timeRemaining]);
+
+  const needsWordPick = showWordModal && !selectedWord && timeRemaining > 0;
+
   return (
     <div className={`game-screen ${isPanic ? 'game-screen--panic' : ''}`}>
       <Confetti trigger={confettiTrigger} />
+
+      {needsWordPick && (
+        <WordSelectModal
+          words={wordPool}
+          wordDifficulty={wordDifficulty}
+          completedWords={completedWords}
+          onSelect={handleSelectWord}
+        />
+      )}
 
       {/* Floating +2 score pops */}
       <div className="score-pops">
@@ -175,7 +231,7 @@ export default function GameScreen({ state, myPlayerId, actions }) {
             <DrawingCanvas
               selectedWord={selectedWord}
               onSubmit={handleSubmit}
-              disabled={timeRemaining <= 0}
+              disabled={timeRemaining <= 0 || !selectedWord}
               hintsRemaining={hintsRemaining}
               hintWord={hintWord}
               onUseHint={actions.useHint}
