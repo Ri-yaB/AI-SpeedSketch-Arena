@@ -19,8 +19,25 @@ const DOODLES = [
   { id: 15, x: 55, y: 40, size: 42, delay: 5,   dur: 13, rotate: -5,  anim: 'drift', svg: <svg viewBox="0 0 60 20" fill="none"><path d="M4 10 C10 2, 16 18, 22 10 C28 2, 34 18, 40 10 C46 2, 52 18, 58 10" stroke="#4F8EF7" strokeWidth="2" strokeLinecap="round"/></svg> },
 ];
 
+const SOLO_FEATURES = [
+  { icon: '🎨', label: 'Draw & Guess', sub: 'AI judges every sketch' },
+  { icon: '⚡', label: '90 Seconds', sub: 'Fast-paced rounds' },
+  { icon: '🏆', label: 'Live Rankings', sub: 'Climb the leaderboard' },
+  { icon: '🎯', label: '3 Difficulties', sub: 'Easy · Medium · Hard' },
+];
+
+const MARQUEE_TEXT = [
+  { icon: '🏆', text: 'Top players will battle live on stage for exclusive prizes' },
+  { icon: '🎁', text: 'Winners take home exciting rewards from Analytics Vidhya' },
+  { icon: '⚔️', text: 'Only the top 8 on the leaderboard make it to Battle Mode' },
+  { icon: '🤖', text: 'AI judges every drawing in real time — confidence is everything' },
+  { icon: '🔥', text: 'Keep playing to climb the leaderboard and earn your spot' },
+  { icon: '✨', text: 'Draw fast, draw smart — your next sketch could change everything' },
+];
+
 export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleEnabled }) {
   const battleUnlocked = !!battleEnabled;
+
   return (
     <div className="mode-select">
       {/* Floating doodle background */}
@@ -54,24 +71,23 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
           <p className="mode-select__sub">DataHack Summit 2026 · Choose your mode</p>
         </div>
 
-        <div className={`mode-select__cards ${!battleUnlocked ? 'mode-select__cards--solo-only' : ''}`}>
-          {/* Solo Mode */}
-          <button className="mode-card mode-card--solo" onClick={onSelectSolo}>
-            <div className="mode-card__icon">🎮</div>
-            <div className="mode-card__name">Solo Mode</div>
-            <div className="mode-card__desc">
-              Join the global arena. Draw words against the AI, score points, and climb the live leaderboard with everyone playing.
-            </div>
-            <div className="mode-card__pills">
-              <span className="mode-pill">100 Words</span>
-              <span className="mode-pill">90 Seconds</span>
-              <span className="mode-pill">Live Leaderboard</span>
-            </div>
-            <div className="mode-card__cta">Play Solo →</div>
-          </button>
+        {battleUnlocked ? (
+          /* ── Both modes: original side-by-side layout ── */
+          <div className="mode-select__cards">
+            <button className="mode-card mode-card--solo" onClick={onSelectSolo}>
+              <div className="mode-card__icon">🎮</div>
+              <div className="mode-card__name">Solo Mode</div>
+              <div className="mode-card__desc">
+                Join the global arena. Draw words against the AI, score points, and climb the live leaderboard.
+              </div>
+              <div className="mode-card__pills">
+                <span className="mode-pill">100 Words</span>
+                <span className="mode-pill">90 Seconds</span>
+                <span className="mode-pill">Live Leaderboard</span>
+              </div>
+              <div className="mode-card__cta">Play Solo →</div>
+            </button>
 
-          {/* Battle Mode — only shown when admin enables it */}
-          {battleUnlocked && (
             <button className="mode-card mode-card--battle" onClick={onSelectBattle}>
               <div className="mode-card__badge">LIVE</div>
               <div className="mode-card__icon">⚔️</div>
@@ -86,26 +102,52 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
               </div>
               <div className="mode-card__cta">Start Battle →</div>
             </button>
-          )}
-        </div>
-
-        {/* Marquee — only when battle mode is off */}
-        {!battleUnlocked && (
-          <div className="mode-marquee">
-            <div className="mode-marquee__track">
-              {[0, 1].map(i => (
-                <span key={i} className="mode-marquee__text">
-                  🏆 &nbsp;Top players on the leaderboard will be selected for an exclusive <strong>Battle Mode</strong> showdown live on stage &nbsp;·&nbsp;
-                  🎁 &nbsp;Winners take home exciting prizes from <strong>Analytics Vidhya</strong> &nbsp;·&nbsp;
-                  ⚔️ &nbsp;Draw fast, draw smart — only the top 8 make it to the battle &nbsp;·&nbsp;
-                  🤖 &nbsp;AI judges every sketch in real time — confidence is everything &nbsp;·&nbsp;
-                  🔥 &nbsp;Keep playing to climb the leaderboard and earn your spot &nbsp;·&nbsp;&nbsp;
-                </span>
-              ))}
-            </div>
+          </div>
+        ) : (
+          /* ── Solo only: hero layout ── */
+          <div className="mode-hero">
+            <button className="mode-hero__card" onClick={onSelectSolo}>
+              <div className="mode-hero__glow" />
+              <div className="mode-hero__icon">🎮</div>
+              <div className="mode-hero__name">Solo Mode</div>
+              <div className="mode-hero__desc">
+                Draw words, beat the AI, and score as many points as you can in 90 seconds. Top players earn a spot in the exclusive Battle Mode showdown.
+              </div>
+              <div className="mode-hero__features">
+                {SOLO_FEATURES.map(f => (
+                  <div key={f.label} className="mode-hero__feat">
+                    <span className="mode-hero__feat-icon">{f.icon}</span>
+                    <div>
+                      <div className="mode-hero__feat-label">{f.label}</div>
+                      <div className="mode-hero__feat-sub">{f.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mode-hero__cta">Play Now →</div>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Marquee — fixed at bottom, full width, only when battle is off */}
+      {!battleUnlocked && (
+        <div className="mode-marquee">
+          <div className="mode-marquee__track">
+            {[0, 1].map(i => (
+              <span key={i} className="mode-marquee__inner">
+                {MARQUEE_TEXT.map((m, idx) => (
+                  <span key={idx} className="mode-marquee__item">
+                    <span className="mode-marquee__icon">{m.icon}</span>
+                    {m.text}
+                    <span className="mode-marquee__sep">·</span>
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
