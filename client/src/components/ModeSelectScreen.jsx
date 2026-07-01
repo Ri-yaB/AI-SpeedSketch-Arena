@@ -54,7 +54,7 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
           <p className="mode-select__sub">DataHack Summit 2026 · Choose your mode</p>
         </div>
 
-        <div className="mode-select__cards">
+        <div className={`mode-select__cards ${!battleUnlocked ? 'mode-select__cards--solo-only' : ''}`}>
           {/* Solo Mode */}
           <button className="mode-card mode-card--solo" onClick={onSelectSolo}>
             <div className="mode-card__icon">🎮</div>
@@ -70,34 +70,41 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
             <div className="mode-card__cta">Play Solo →</div>
           </button>
 
-          {/* Battle Mode */}
-          <button
-            className={`mode-card mode-card--battle ${!battleUnlocked ? 'mode-card--locked' : ''}`}
-            onClick={battleUnlocked ? onSelectBattle : undefined}
-            disabled={!battleUnlocked}
-          >
-            {battleUnlocked
-              ? <div className="mode-card__badge">LIVE</div>
-              : <div className="mode-card__badge mode-card__badge--lock">🔒 Coming Soon</div>
-            }
-            <div className="mode-card__icon">⚔️</div>
-            <div className="mode-card__name">Battle Mode</div>
-            <div className="mode-card__desc">
-              {battleUnlocked
-                ? 'Top 8 solo players face off live. Everyone draws the same word — best AI confidence wins the round!'
-                : 'The top 8 players from the solo leaderboard will be invited to battle live on stage. Stay tuned!'
-              }
-            </div>
-            <div className="mode-card__pills">
-              <span className="mode-pill">Top 8 Players</span>
-              <span className="mode-pill">5 Rounds</span>
-              <span className="mode-pill">Best Drawing Wins</span>
-            </div>
-            <div className="mode-card__cta">
-              {battleUnlocked ? 'Start Battle →' : 'Not available yet'}
-            </div>
-          </button>
+          {/* Battle Mode — only shown when admin enables it */}
+          {battleUnlocked && (
+            <button className="mode-card mode-card--battle" onClick={onSelectBattle}>
+              <div className="mode-card__badge">LIVE</div>
+              <div className="mode-card__icon">⚔️</div>
+              <div className="mode-card__name">Battle Mode</div>
+              <div className="mode-card__desc">
+                Top 8 solo players face off live. Everyone draws the same word — best AI confidence wins the round!
+              </div>
+              <div className="mode-card__pills">
+                <span className="mode-pill">Top 8 Players</span>
+                <span className="mode-pill">5 Rounds</span>
+                <span className="mode-pill">Best Drawing Wins</span>
+              </div>
+              <div className="mode-card__cta">Start Battle →</div>
+            </button>
+          )}
         </div>
+
+        {/* Marquee — only when battle mode is off */}
+        {!battleUnlocked && (
+          <div className="mode-marquee">
+            <div className="mode-marquee__track">
+              {[0, 1].map(i => (
+                <span key={i} className="mode-marquee__text">
+                  🏆 &nbsp;Top players on the leaderboard will be selected for an exclusive <strong>Battle Mode</strong> showdown live on stage &nbsp;·&nbsp;
+                  🎁 &nbsp;Winners take home exciting prizes from <strong>Analytics Vidhya</strong> &nbsp;·&nbsp;
+                  ⚔️ &nbsp;Draw fast, draw smart — only the top 8 make it to the battle &nbsp;·&nbsp;
+                  🤖 &nbsp;AI judges every sketch in real time — confidence is everything &nbsp;·&nbsp;
+                  🔥 &nbsp;Keep playing to climb the leaderboard and earn your spot &nbsp;·&nbsp;&nbsp;
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2686,6 +2686,50 @@ input {
   justify-content: center;
 }
 
+/* Solo-only layout: center the single card and cap its width */
+.mode-select__cards--solo-only {
+  max-width: 440px;
+}
+
+.mode-select__cards--solo-only .mode-card {
+  flex: 1;
+}
+
+/* Marquee ticker */
+.mode-marquee {
+  width: 100%;
+  overflow: hidden;
+  background: rgba(79,142,247,0.08);
+  border: 1px solid rgba(79,142,247,0.18);
+  border-radius: 40px;
+  padding: 10px 0;
+  max-width: 860px;
+}
+
+.mode-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+}
+
+.mode-marquee__text {
+  font-size: 13px;
+  color: var(--text-300);
+  white-space: nowrap;
+  padding: 0 16px;
+  line-height: 1.4;
+}
+
+.mode-marquee__text strong {
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 /* Mode cards */
 .mode-card {
   flex: 1;
