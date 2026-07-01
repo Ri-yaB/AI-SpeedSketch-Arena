@@ -25,7 +25,7 @@ function WordSelectModal({ words, wordDifficulty, completedWords, onSelect }) {
     <div className="word-modal-overlay">
       <div className="word-modal">
         <div className="word-modal__title">Choose a word to draw</div>
-        <div className="word-modal__subtitle">Pick any word — canvas unlocks once you choose</div>
+        <div className="word-modal__subtitle">Pick any word. Canvas unlocks once you choose.</div>
         {['easy', 'medium', 'hard'].map(diff => groups[diff].length > 0 && (
           <div key={diff} className="word-modal__group">
             <div className="word-modal__group-label" style={{ color: DIFF_COLORS[diff] }}>

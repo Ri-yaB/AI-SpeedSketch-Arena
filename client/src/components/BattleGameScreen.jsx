@@ -82,7 +82,7 @@ export default function BattleGameScreen({ battleState, myPlayerId, battleAction
                 ? <>🏆 You won <strong>{t.word}</strong>! ({t.topConfidence}%)</>
                 : <><strong>{t.winnerName}</strong> won <strong>{t.word}</strong> ({t.topConfidence}%)</>
             ) : t.submittedCount > 0 ? (
-              <>😬 No winner on <strong>{t.word}</strong> — best was {t.topConfidence}% (need 75%)</>
+              <>😬 No winner on <strong>{t.word}</strong>. Best was {t.topConfidence}% (need 75%)</>
             ) : (
               <>No one drew <strong>{t.word}</strong></>
             )}

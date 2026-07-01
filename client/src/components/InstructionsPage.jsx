@@ -15,7 +15,7 @@ const SOLO_STEPS = [
   {
     step: '03', icon: '🖌️',
     title: 'Draw it on the canvas',
-    desc: 'Use the brush, shapes, and colour tools to sketch your word. You have 90 seconds — draw as many as you can!',
+    desc: 'Use the brush, shapes, and colour tools to sketch your word. You have 90 seconds. Draw as many as you can!',
   },
   {
     step: '04', icon: '🤖',
@@ -58,7 +58,7 @@ const BATTLE_STEPS = [
   {
     step: '05', icon: '⚡',
     title: 'Live word-winner announcements',
-    desc: "As soon as all players submit a word, the winner is announced in real time — don't wait for the timer!",
+    desc: "As soon as all players submit a word, the winner is announced in real time - don't wait for the timer!",
   },
   {
     step: '06', icon: '📊',
@@ -91,7 +91,7 @@ export default function InstructionsPage() {
       <div className="inst-page__header">
         <DHSLogo height={32} />
         <div className="inst-page__title">How to Play</div>
-        <p className="inst-page__subtitle">AI SpeedSketch Arena — DataHack Summit 2026</p>
+        <p className="inst-page__subtitle">AI SpeedSketch Arena - DataHack Summit 2026</p>
       </div>
 
       {/* Mode tabs */}
@@ -119,7 +119,7 @@ export default function InstructionsPage() {
             <div className="inst-mode-banner__desc">
               {isSolo
                 ? 'Play in the global arena against the AI. Race the clock and climb the live leaderboard.'
-                : 'Private rooms, shared words. Draw the same words as your friends — whoever impresses the AI most wins!'}
+                : 'Private rooms, shared words. Draw the same words as your friends - whoever impresses the AI most wins!'}
             </div>
           </div>
         </div>
@@ -155,8 +155,8 @@ export default function InstructionsPage() {
           <span className="inst-tip__icon">⚡</span>
           <span>
             {isSolo
-              ? 'Pro tip: Start with Hard words while your energy is high — they\'re worth double the points!'
-              : 'Pro tip: In Battle Mode, prioritise Hard words — 4 pts if you nail the best drawing!'}
+              ? 'Pro tip: Start with Hard words while your energy is high - they\'re worth double the points!'
+              : 'Pro tip: In Battle Mode, prioritise Hard words - 4 pts if you nail the best drawing!'}
           </span>
         </div>
       </div>

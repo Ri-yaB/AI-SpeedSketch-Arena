@@ -260,7 +260,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
             <div className="battle-players-card__title">
               Players ({players.length}/8)
               {players.length < 2 && (
-                <span className="battle-players-card__waiting"> — Waiting for players…</span>
+                <span className="battle-players-card__waiting"> · Waiting for players...</span>
               )}
             </div>
             <div className="battle-players-card__list">
@@ -278,7 +278,7 @@ export default function BattleLobbyScreen({ onBack, battleState, battleActions, 
 
           <div className="battle-info-card">
             <span>⚔️</span>
-            <span>5 rounds — 2 Easy · 2 Medium · 1 Hard · 15 seconds each</span>
+            <span>5 rounds · 2 Easy · 2 Medium · 1 Hard · 15 seconds each</span>
           </div>
 
           {error && <div className="battle-error">{error}</div>}

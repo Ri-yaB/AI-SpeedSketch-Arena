@@ -30,9 +30,9 @@ const MARQUEE_TEXT = [
   { icon: '🏆', text: 'Top players will battle live on stage for exclusive prizes' },
   { icon: '🎁', text: 'Winners take home exciting rewards from Analytics Vidhya' },
   { icon: '⚔️', text: 'Only the top 8 on the leaderboard make it to Battle Mode' },
-  { icon: '🤖', text: 'AI judges every drawing in real time — confidence is everything' },
+  { icon: '🤖', text: 'AI judges every drawing in real time. Confidence is everything' },
   { icon: '🔥', text: 'Keep playing to climb the leaderboard and earn your spot' },
-  { icon: '✨', text: 'Draw fast, draw smart — your next sketch could change everything' },
+  { icon: '✨', text: 'Draw fast, draw smart. Your next sketch could change everything' },
 ];
 
 export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleEnabled }) {
@@ -93,7 +93,7 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
               <div className="mode-card__icon">⚔️</div>
               <div className="mode-card__name">Battle Mode</div>
               <div className="mode-card__desc">
-                Top 8 solo players face off live. Everyone draws the same word — best AI confidence wins the round!
+                Top 8 solo players face off live. Everyone draws the same word. Best AI confidence wins the round!
               </div>
               <div className="mode-card__pills">
                 <span className="mode-pill">Top 8 Players</span>
@@ -140,7 +140,7 @@ export default function ModeSelectScreen({ onSelectSolo, onSelectBattle, battleE
                   <span key={idx} className="mode-marquee__item">
                     <span className="mode-marquee__icon">{m.icon}</span>
                     {m.text}
-                    <span className="mode-marquee__sep">·</span>
+                    <span className="mode-marquee__sep" />
                   </span>
                 ))}
               </span>

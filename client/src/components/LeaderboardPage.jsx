@@ -31,7 +31,7 @@ export default function LeaderboardPage({ socketRef }) {
         {/* ── Left: scores list ── */}
         <div className="lb-page__body">
           {entries.length === 0 ? (
-            <div className="lb-page__empty">No scores yet — be the first to play!</div>
+            <div className="lb-page__empty">No scores yet. Be the first to play!</div>
           ) : (
             <div className="lb-page__list">
               <div className="lb-page__col-headers">
