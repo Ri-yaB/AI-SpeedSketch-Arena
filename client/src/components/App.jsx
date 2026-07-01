@@ -25,6 +25,13 @@ export default function App() {
   const [activeTab, setActiveTab]   = useState('game');
   const [mode, setMode]             = useState(null); // null | 'solo' | 'battle'
   const [battleEnabled, setBattleEnabled] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminPass, setAdminPass]   = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [battleModeOn, setBattleModeOn] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
+  const ADMIN_PASSWORD = 'dhs2026';
   const spectatedRef = useRef(false);
 
   const { state, actions }               = useGameState(socketRef, myPlayerId);
@@ -48,14 +55,36 @@ export default function App() {
   useEffect(() => {
     const s = socketRef.current;
     if (!s) return;
-    // Query current status on connect
     s.emit('get-battle-status', null, (res) => {
-      if (res) setBattleEnabled(res.enabled);
+      if (res) { setBattleEnabled(res.enabled); setBattleModeOn(res.enabled); }
     });
-    const onChanged = ({ enabled }) => setBattleEnabled(enabled);
+    const onChanged = ({ enabled }) => { setBattleEnabled(enabled); setBattleModeOn(enabled); };
     s.on('battle-mode-changed', onChanged);
     return () => s.off('battle-mode-changed', onChanged);
   }, [socketRef]);
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPass === ADMIN_PASSWORD) {
+      setAdminError('');
+      setAdminPass('');
+      // don't close — show toggle UI inline
+    } else {
+      setAdminError('Incorrect password.');
+    }
+  };
+
+  const handleToggleBattleMode = () => {
+    const s = socketRef.current;
+    if (!s) return;
+    setToggleLoading(true);
+    s.emit('admin-set-battle-enabled', { enabled: !battleModeOn, adminPassword: ADMIN_PASSWORD }, (res) => {
+      if (res?.success) setBattleModeOn(res.enabled);
+      setToggleLoading(false);
+    });
+  };
+
+  const isAdminUnlocked = adminPass === '' && adminError === '' && showAdminModal && toggleLoading !== null;
 
   useEffect(() => {
     if (activeTab === 'leaderboard' && !state.joined && !spectatedRef.current) {
@@ -155,6 +184,68 @@ export default function App() {
 
   return (
     <div className="app-root">
+      {/* Global admin modal */}
+      {showAdminModal && (
+        <div className="admin-modal-backdrop" onClick={() => { setShowAdminModal(false); setAdminPass(''); setAdminError(''); }}>
+          <div className="admin-modal" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__title">🔐 Admin Panel</div>
+
+            {/* Not yet authenticated — show password form */}
+            {!adminPass.startsWith('__ok') ? (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (adminPass === ADMIN_PASSWORD) {
+                  setAdminPass('__ok');
+                  setAdminError('');
+                } else {
+                  setAdminError('Incorrect password.');
+                }
+              }}>
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input
+                    className="form-input"
+                    type="password"
+                    placeholder="Enter admin password"
+                    value={adminPass.startsWith('__ok') ? '' : adminPass}
+                    onChange={e => setAdminPass(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                {adminError && <div className="battle-error">{adminError}</div>}
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <button type="submit" className="btn btn--primary">Unlock</button>
+                  <button type="button" className="btn btn--ghost" onClick={() => { setShowAdminModal(false); setAdminPass(''); setAdminError(''); }}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              /* Authenticated — show controls */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="admin-toggle-row">
+                  <div className="admin-toggle-info">
+                    <div className="admin-toggle-info__title">Battle Mode</div>
+                    <div className="admin-toggle-info__sub">
+                      {battleModeOn ? 'Visible to all players' : 'Hidden from players'}
+                    </div>
+                  </div>
+                  <button
+                    className={`admin-toggle-btn ${battleModeOn ? 'admin-toggle-btn--on' : 'admin-toggle-btn--off'}`}
+                    onClick={handleToggleBattleMode}
+                    disabled={toggleLoading}
+                  >
+                    <span className="admin-toggle-btn__track">
+                      <span className="admin-toggle-btn__thumb" />
+                    </span>
+                    <span className="admin-toggle-btn__label">{battleModeOn ? 'ON' : 'OFF'}</span>
+                  </button>
+                </div>
+                <button className="btn btn--ghost" onClick={() => { setShowAdminModal(false); setAdminPass(''); }}>Close</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {showNav && (
         <nav className="app-nav">
           <div className="app-nav__logo">
@@ -174,6 +265,13 @@ export default function App() {
               </button>
             ))}
           </div>
+          <button
+            className="app-nav__admin-btn"
+            onClick={() => { setShowAdminModal(true); setAdminError(''); }}
+            title="Admin"
+          >
+            🔐
+          </button>
         </nav>
       )}
 

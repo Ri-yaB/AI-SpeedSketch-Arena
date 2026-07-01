@@ -183,6 +183,20 @@ input {
 
 .app-nav__tab-icon { font-size: 15px; }
 
+.app-nav__admin-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 15px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity var(--tx-fast);
+  flex-shrink: 0;
+}
+.app-nav__admin-btn:hover { opacity: 1; }
+
 /* ============================================================
    LOBBY SCREEN
    ============================================================ */
